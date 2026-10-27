@@ -1,0 +1,30 @@
+name: Mudança de escopo
+description: Registro de mudança relevante no projeto (pedido do professor).
+title: "[Mudança] "
+labels: ["mudanca-de-escopo"]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que mudou?
+    validations:
+      required: true
+  - type: textarea
+    id: porque
+    attributes:
+      label: Por que mudou?
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Qual foi o impacto?
+      description: Prazo, escopo, tarefas criadas ou retiradas.
+    validations:
+      required: true
+  - type: textarea
+    id: reacao
+    attributes:
+      label: Como a equipe reagiu?
+    validations:
+      required: true

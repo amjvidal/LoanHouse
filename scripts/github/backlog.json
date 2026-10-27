@@ -1,0 +1,1503 @@
+{
+  "projeto": "Gerenciador Imobiliário",
+  "sprints": [
+    {
+      "numero": 1,
+      "titulo": "Sprint 1",
+      "inicio": "2026-10-27",
+      "fim": "2026-10-28",
+      "meta": "Fundação: GitHub, estrutura de pastas, arquitetura e modelagem do banco",
+      "review": "2026-10-28"
+    },
+    {
+      "numero": 2,
+      "titulo": "Sprint 2",
+      "inicio": "2026-10-29",
+      "fim": "2026-11-06",
+      "meta": "Login, layout base e cadastro de casas (web) / login e navegação (Android)",
+      "review": "2026-11-06"
+    },
+    {
+      "numero": 3,
+      "titulo": "Sprint 3",
+      "inicio": "2026-11-09",
+      "fim": "2026-11-13",
+      "meta": "Inquilinos, contratos e histórico (web) / casas com ViaCEP (Android)",
+      "review": "2026-11-13"
+    },
+    {
+      "numero": 4,
+      "titulo": "Sprint 4",
+      "inicio": "2026-11-16",
+      "fim": "2026-11-19",
+      "meta": "Pagamentos, alertas de atraso e WhatsApp (web) / inquilinos e pagamento (Android)",
+      "review": "2026-11-19"
+    },
+    {
+      "numero": 5,
+      "titulo": "Sprint 5",
+      "inicio": "2026-11-23",
+      "fim": "2026-11-27",
+      "meta": "Calendário, arquivos, IPTU, reclamações, parceiros e estoque (web) / alertas e contato (Android)",
+      "review": "2026-11-27"
+    },
+    {
+      "numero": 6,
+      "titulo": "Sprint 6",
+      "inicio": "2026-11-30",
+      "fim": "2026-12-04",
+      "meta": "Validação com os usuários, correções e entrega final (web) / APK e ensaio do pitch (Android)",
+      "review": "2026-12-04"
+    }
+  ],
+  "itens": [
+    {
+      "key": "E1",
+      "tipo": "epic",
+      "titulo": "[Epic] Fundação do projeto",
+      "descricao": "Repositório, quadro, arquitetura, banco de dados e automações que sustentam web e Android.",
+      "pai": null
+    },
+    {
+      "key": "E1.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Repositório e GitHub Projects",
+      "descricao": "Parte do épico Fundação do projeto.",
+      "pai": "E1"
+    },
+    {
+      "key": "E1.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero um repositório organizado e um quadro de tarefas, para acompanhar o andamento de todo mundo.",
+      "descricao": "Como equipe, quero um repositório organizado e um quadro de tarefas, para acompanhar o andamento de todo mundo.",
+      "criterios": [
+        "O repositório tem a estrutura de pastas combinada",
+        "Labels, milestones (sprints) e issues estão criados",
+        "O Project tem as visualizações Quadro, Por sprint e Cronograma",
+        "O professor tem acesso ao repositório"
+      ],
+      "pai": "E1.F1",
+      "sprint": 1
+    },
+    {
+      "key": "E1.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o repositório e subir a estrutura de pastas",
+      "pai": "E1.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-27",
+      "sprint": 1,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Rodar o script que cria labels, sprints, issues e o Project",
+      "pai": "E1.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-27",
+      "sprint": 1,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Configurar as visualizações e automações do Project",
+      "pai": "E1.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F1.P1.T4",
+      "tipo": "task",
+      "titulo": "Revisar o README e dar acesso ao professor",
+      "pai": "E1.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "docs",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Arquitetura e banco de dados",
+      "descricao": "Parte do épico Fundação do projeto.",
+      "pai": "E1"
+    },
+    {
+      "key": "E1.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero a arquitetura e o modelo do banco definidos, para que o site e o app usem os mesmos dados.",
+      "descricao": "Como equipe, quero a arquitetura e o modelo do banco definidos, para que o site e o app usem os mesmos dados.",
+      "criterios": [
+        "As coleções do Firestore estão documentadas em docs/modelagem-banco.md",
+        "A arquitetura está documentada em docs/arquitetura.md",
+        "O projeto Firebase existe com Authentication, Firestore e Hosting ativos",
+        "As regras de segurança v1 estão publicadas"
+      ],
+      "pai": "E1.F2",
+      "sprint": 1
+    },
+    {
+      "key": "E1.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o projeto no Firebase (Authentication, Firestore e Hosting)",
+      "pai": "E1.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-10-27",
+      "sprint": 1,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F2.P1.T2",
+      "tipo": "task",
+      "titulo": "Revisar a modelagem das coleções do Firestore",
+      "pai": "E1.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-10-27",
+      "sprint": 1,
+      "area": "docs",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F2.P1.T3",
+      "tipo": "task",
+      "titulo": "Revisar a arquitetura e as regras de negócio compartilhadas",
+      "pai": "E1.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "docs",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F2.P1.T4",
+      "tipo": "task",
+      "titulo": "Publicar as regras de segurança v1 do Firestore",
+      "pai": "E1.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F3",
+      "tipo": "feature",
+      "titulo": "[Feature] Integração e entrega contínua",
+      "descricao": "Parte do épico Fundação do projeto.",
+      "pai": "E1"
+    },
+    {
+      "key": "E1.F3.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero que o código seja verificado e o site publicado automaticamente, para não depender de deploy manual.",
+      "descricao": "Como equipe, quero que o código seja verificado e o site publicado automaticamente, para não depender de deploy manual.",
+      "criterios": [
+        "Todo pull request para a main roda a verificação do web",
+        "Todo merge na main publica o site no Firebase Hosting"
+      ],
+      "pai": "E1.F3",
+      "sprint": 2
+    },
+    {
+      "key": "E1.F3.P1.T1",
+      "tipo": "task",
+      "titulo": "Ativar o workflow de verificação do web nos pull requests",
+      "pai": "E1.F3.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F3.P1.T2",
+      "tipo": "task",
+      "titulo": "Ativar o deploy automático no Firebase Hosting",
+      "pai": "E1.F3.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-06",
+      "sprint": 2,
+      "area": "infra",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E1.F4",
+      "tipo": "feature",
+      "titulo": "[Feature] Gestão do projeto (Scrum)",
+      "descricao": "Parte do épico Fundação do projeto.",
+      "pai": "E1"
+    },
+    {
+      "key": "E1.F4.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero registrar as mudanças de escopo, para conseguir explicar o que mudou e por quê.",
+      "descricao": "Como equipe, quero registrar as mudanças de escopo, para conseguir explicar o que mudou e por quê.",
+      "criterios": [
+        "A divisão web/Android está registrada no Diário de Bordo com motivo e impacto"
+      ],
+      "pai": "E1.F4",
+      "sprint": 1
+    },
+    {
+      "key": "E1.F4.P1.T1",
+      "tipo": "task",
+      "titulo": "Registrar no Diário de Bordo a divisão web/Android e a troca de tecnologia",
+      "pai": "E1.F4.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "docs",
+      "epico": "Fundação do projeto"
+    },
+    {
+      "key": "E2",
+      "tipo": "epic",
+      "titulo": "[Epic] Acesso e segurança (web)",
+      "descricao": "Login do Marcos e proteção dos dados.",
+      "pai": null
+    },
+    {
+      "key": "E2.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Login",
+      "descricao": "Parte do épico Acesso e segurança (web).",
+      "pai": "E2"
+    },
+    {
+      "key": "E2.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero entrar com e-mail e senha, para que só eu e quem eu autorizar vejamos os dados dos inquilinos.",
+      "descricao": "Como Marcos, quero entrar com e-mail e senha, para que só eu e quem eu autorizar vejamos os dados dos inquilinos.",
+      "criterios": [
+        "Login com e-mail e senha pelo Firebase Authentication",
+        "Mensagem clara quando a senha está errada",
+        "Páginas internas redirecionam para o login sem sessão",
+        "Botão Sair encerra a sessão"
+      ],
+      "pai": "E2.F1",
+      "sprint": 2
+    },
+    {
+      "key": "E2.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o serviço de autenticação (login, logout e sessão)",
+      "pai": "E2.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-10-29",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Acesso e segurança (web)"
+    },
+    {
+      "key": "E2.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar a tela de login integrada ao serviço",
+      "pai": "E2.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-30",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Acesso e segurança (web)"
+    },
+    {
+      "key": "E2.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Proteger as páginas internas e cadastrar o usuário do Marcos",
+      "pai": "E2.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-10-30",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Acesso e segurança (web)"
+    },
+    {
+      "key": "E3",
+      "tipo": "epic",
+      "titulo": "[Epic] Gestão de imóveis (web)",
+      "descricao": "Cadastro completo das casas: endereço, código, fotos, documentos, IPTU, contas e reclamações.",
+      "pai": null
+    },
+    {
+      "key": "E3.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Cadastro de casas",
+      "descricao": "Parte do épico Gestão de imóveis (web).",
+      "pai": "E3"
+    },
+    {
+      "key": "E3.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero cadastrar uma casa digitando só o CEP e o número, para não perder tempo e não errar o endereço.",
+      "descricao": "Como Marcos, quero cadastrar uma casa digitando só o CEP e o número, para não perder tempo e não errar o endereço.",
+      "criterios": [
+        "Ao digitar o CEP, rua e bairro são preenchidos pelo ViaCEP",
+        "O código é gerado com as 3 letras do bairro + número (ex.: BOA-123)",
+        "Não é possível salvar um código repetido",
+        "A casa nova aparece como vaga"
+      ],
+      "pai": "E3.F1",
+      "sprint": 2
+    },
+    {
+      "key": "E3.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o serviço de casas (criar, listar, editar) com geração do código",
+      "pai": "E3.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-03",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar a lista de casas em cartões grandes",
+      "pai": "E3.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-04",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Integrar o ViaCEP no cadastro de casa",
+      "pai": "E3.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-04",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F1.P1.T4",
+      "tipo": "task",
+      "titulo": "Criar o formulário de casa (novo e editar)",
+      "pai": "E3.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-05",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F1.P1.T5",
+      "tipo": "task",
+      "titulo": "Excluir casa com confirmação e validar os campos",
+      "pai": "E3.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-05",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Detalhe da casa, fotos e documentos",
+      "descricao": "Parte do épico Gestão de imóveis (web).",
+      "pai": "E3"
+    },
+    {
+      "key": "E3.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero ver tudo de uma casa numa tela só, para não ter que procurar em vários lugares.",
+      "descricao": "Como Marcos, quero ver tudo de uma casa numa tela só, para não ter que procurar em vários lugares.",
+      "criterios": [
+        "A tela mostra endereço, situação, inquilino atual e atalhos"
+      ],
+      "pai": "E3.F2",
+      "sprint": 3
+    },
+    {
+      "key": "E3.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar a tela de detalhe da casa",
+      "pai": "E3.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-12",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F2.P2",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero anexar fotos e documentos à casa e ao inquilino, para não depender de papel.",
+      "descricao": "Como Marcos, quero anexar fotos e documentos à casa e ao inquilino, para não depender de papel.",
+      "criterios": [
+        "Arquivos guardados em bucket privado do Supabase Storage",
+        "Envio de JPG, PNG e PDF de até 10 MB",
+        "Fotos aparecem em galeria e documentos em lista"
+      ],
+      "pai": "E3.F2",
+      "sprint": 5
+    },
+    {
+      "key": "E3.F2.P2.T1",
+      "tipo": "task",
+      "titulo": "Configurar o Supabase Storage e criar o envio de fotos e documentos",
+      "pai": "E3.F2.P2",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-24",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F2.P2.T2",
+      "tipo": "task",
+      "titulo": "Criar a galeria de fotos e a lista de documentos",
+      "pai": "E3.F2.P2",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-25",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F3",
+      "tipo": "feature",
+      "titulo": "[Feature] IPTU, contas e reclamações",
+      "descricao": "Parte do épico Gestão de imóveis (web).",
+      "pai": "E3"
+    },
+    {
+      "key": "E3.F3.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero controlar o IPTU e as contas de água e luz de cada casa, para saber o que está em dia.",
+      "descricao": "Como Marcos, quero controlar o IPTU e as contas de água e luz de cada casa, para saber o que está em dia.",
+      "criterios": [
+        "Marcar IPTU do ano como pago ou não",
+        "Lançar contas da Compesa e da Celpe à mão (mês, valor, pago)"
+      ],
+      "pai": "E3.F3",
+      "sprint": 5
+    },
+    {
+      "key": "E3.F3.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o controle de IPTU e o lançamento de contas de água e luz",
+      "pai": "E3.F3.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-25",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E3.F3.P2",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero registrar as reclamações dos inquilinos, para acompanhar os problemas de cada casa.",
+      "descricao": "Como Marcos, quero registrar as reclamações dos inquilinos, para acompanhar os problemas de cada casa.",
+      "criterios": [
+        "Registrar reclamação com data e descrição",
+        "Marcar como resolvida"
+      ],
+      "pai": "E3.F3",
+      "sprint": 5
+    },
+    {
+      "key": "E3.F3.P2.T1",
+      "tipo": "task",
+      "titulo": "Criar o registro de reclamações na casa",
+      "pai": "E3.F3.P2",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-26",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Gestão de imóveis (web)"
+    },
+    {
+      "key": "E4",
+      "tipo": "epic",
+      "titulo": "[Epic] Inquilinos e contratos (web)",
+      "descricao": "Cadastro de inquilinos, cônjuges e fiadores, contratos e histórico de cada casa.",
+      "pai": null
+    },
+    {
+      "key": "E4.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Cadastro de inquilinos",
+      "descricao": "Parte do épico Inquilinos e contratos (web).",
+      "pai": "E4"
+    },
+    {
+      "key": "E4.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero cadastrar o inquilino com cônjuge e fiadores, para ter todos os dados à mão quando precisar.",
+      "descricao": "Como Marcos, quero cadastrar o inquilino com cônjuge e fiadores, para ter todos os dados à mão quando precisar.",
+      "criterios": [
+        "Nome, CPF, RG, telefone, estado civil e foto",
+        "Campos do cônjuge aparecem só para casados",
+        "Um ou mais fiadores por inquilino"
+      ],
+      "pai": "E4.F1",
+      "sprint": 3
+    },
+    {
+      "key": "E4.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o serviço de inquilinos",
+      "pai": "E4.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-09",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar a lista de inquilinos",
+      "pai": "E4.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-09",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Criar o formulário de inquilino com os campos do cônjuge",
+      "pai": "E4.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-10",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F1.P1.T4",
+      "tipo": "task",
+      "titulo": "Criar o cadastro de fiadores",
+      "pai": "E4.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-10",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F1.P1.T5",
+      "tipo": "task",
+      "titulo": "Criar a tela de detalhe do inquilino",
+      "pai": "E4.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-11",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Contratos e histórico",
+      "descricao": "Parte do épico Inquilinos e contratos (web).",
+      "pai": "E4"
+    },
+    {
+      "key": "E4.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero ligar um inquilino a uma casa com valor e vencimento, para a casa aparecer como alugada.",
+      "descricao": "Como Marcos, quero ligar um inquilino a uma casa com valor e vencimento, para a casa aparecer como alugada.",
+      "criterios": [
+        "Escolher casa vaga, valor do aluguel e dia de vencimento",
+        "A casa muda para alugada"
+      ],
+      "pai": "E4.F2",
+      "sprint": 3
+    },
+    {
+      "key": "E4.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o serviço de contratos (vincular inquilino à casa)",
+      "pai": "E4.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-11",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F2.P2",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero ver quem já morou em cada casa e se eu alugaria de novo, para decidir melhor sobre novos inquilinos.",
+      "descricao": "Como Marcos, quero ver quem já morou em cada casa e se eu alugaria de novo, para decidir melhor sobre novos inquilinos.",
+      "criterios": [
+        "Encerrar contrato pede comentário final e 'alugaria de novo?'",
+        "A casa volta a ficar vaga",
+        "O histórico lista os contratos da casa do mais novo ao mais antigo"
+      ],
+      "pai": "E4.F2",
+      "sprint": 3
+    },
+    {
+      "key": "E4.F2.P2.T1",
+      "tipo": "task",
+      "titulo": "Criar o encerramento de contrato",
+      "pai": "E4.F2.P2",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-12",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F2.P2.T2",
+      "tipo": "task",
+      "titulo": "Criar o histórico de inquilinos na casa",
+      "pai": "E4.F2.P2",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-13",
+      "sprint": 3,
+      "area": "web",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E4.F2.P2.T3",
+      "tipo": "task",
+      "titulo": "Atualizar as regras e os índices do Firestore para as novas coleções",
+      "pai": "E4.F2.P2",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-13",
+      "sprint": 3,
+      "area": "infra",
+      "epico": "Inquilinos e contratos (web)"
+    },
+    {
+      "key": "E5",
+      "tipo": "epic",
+      "titulo": "[Epic] Painel, pagamentos e alertas (web)",
+      "descricao": "O coração do sistema: ver a situação das casas e saber na hora quem atrasou.",
+      "pai": null
+    },
+    {
+      "key": "E5.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Painel inicial",
+      "descricao": "Parte do épico Painel, pagamentos e alertas (web).",
+      "pai": "E5"
+    },
+    {
+      "key": "E5.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero ver todas as casas no painel com cores, para saber de imediato quais estão alugadas, vagas ou atrasadas.",
+      "descricao": "Como Marcos, quero ver todas as casas no painel com cores, para saber de imediato quais estão alugadas, vagas ou atrasadas.",
+      "criterios": [
+        "Ícones grandes com nome para cada função",
+        "Casas agrupadas por situação, com cor e texto",
+        "Letras de pelo menos 18 px"
+      ],
+      "pai": "E5.F1",
+      "sprint": 2
+    },
+    {
+      "key": "E5.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o CSS base (cores, tamanhos) e o layout com menu",
+      "pai": "E5.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-10-29",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar o painel com os ícones das funções",
+      "pai": "E5.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-03",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Mostrar as casas por situação no painel",
+      "pai": "E5.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-06",
+      "sprint": 2,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Pagamentos",
+      "descricao": "Parte do épico Painel, pagamentos e alertas (web).",
+      "pai": "E5"
+    },
+    {
+      "key": "E5.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero registrar o pagamento do aluguel, para manter o controle sem caderno.",
+      "descricao": "Como Marcos, quero registrar o pagamento do aluguel, para manter o controle sem caderno.",
+      "criterios": [
+        "Cada contrato gera as mensalidades com vencimento",
+        "Marcar um mês como pago registra a data",
+        "A casa volta para alugada"
+      ],
+      "pai": "E5.F2",
+      "sprint": 4
+    },
+    {
+      "key": "E5.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Gerar as mensalidades de cada contrato",
+      "pai": "E5.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-16",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F2.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar a tela de pagamentos da casa",
+      "pai": "E5.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-16",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F2.P1.T3",
+      "tipo": "task",
+      "titulo": "Criar a ação de registrar pagamento",
+      "pai": "E5.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-17",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F3",
+      "tipo": "feature",
+      "titulo": "[Feature] Alertas de atraso",
+      "descricao": "Parte do épico Painel, pagamentos e alertas (web).",
+      "pai": "E5"
+    },
+    {
+      "key": "E5.F3.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero ser avisado quando um aluguel atrasar, para cobrar logo.",
+      "descricao": "Como Marcos, quero ser avisado quando um aluguel atrasar, para cobrar logo.",
+      "criterios": [
+        "Mensalidade vencida e não paga vira atrasada",
+        "O painel lista os atrasos com dias de atraso",
+        "Uma verificação automática roda todo dia"
+      ],
+      "pai": "E5.F3",
+      "sprint": 4
+    },
+    {
+      "key": "E5.F3.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o cálculo da situação da casa (vaga, alugada, atrasada)",
+      "pai": "E5.F3.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-17",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F3.P1.T2",
+      "tipo": "task",
+      "titulo": "Mostrar os alertas de atraso no painel",
+      "pai": "E5.F3.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-18",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F3.P1.T3",
+      "tipo": "task",
+      "titulo": "Ativar a verificação diária de atrasos no GitHub Actions",
+      "pai": "E5.F3.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-18",
+      "sprint": 4,
+      "area": "infra",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E5.F3.P1.T4",
+      "tipo": "task",
+      "titulo": "Testar todo o fluxo financeiro e corrigir",
+      "pai": "E5.F3.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-19",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Painel, pagamentos e alertas (web)"
+    },
+    {
+      "key": "E6",
+      "tipo": "epic",
+      "titulo": "[Epic] Comunicação e agenda (web)",
+      "descricao": "WhatsApp com mensagem pronta e calendário grande.",
+      "pai": null
+    },
+    {
+      "key": "E6.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] WhatsApp",
+      "descricao": "Parte do épico Comunicação e agenda (web).",
+      "pai": "E6"
+    },
+    {
+      "key": "E6.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero mandar mensagem no WhatsApp com o texto pronto, para cobrar ou avisar sem digitar.",
+      "descricao": "Como Marcos, quero mandar mensagem no WhatsApp com o texto pronto, para cobrar ou avisar sem digitar.",
+      "criterios": [
+        "Botão no alerta e na tela do inquilino",
+        "Abre wa.me com número e mensagem preenchidos"
+      ],
+      "pai": "E6.F1",
+      "sprint": 4
+    },
+    {
+      "key": "E6.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o botão de WhatsApp com mensagem pronta",
+      "pai": "E6.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-19",
+      "sprint": 4,
+      "area": "web",
+      "epico": "Comunicação e agenda (web)"
+    },
+    {
+      "key": "E6.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Calendário",
+      "descricao": "Parte do épico Comunicação e agenda (web).",
+      "pai": "E6"
+    },
+    {
+      "key": "E6.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero ver vencimentos e compromissos num calendário grande, para não esquecer datas.",
+      "descricao": "Como Marcos, quero ver vencimentos e compromissos num calendário grande, para não esquecer datas.",
+      "criterios": [
+        "Visão mensal com dias grandes",
+        "Vencimentos aparecem automaticamente",
+        "Criar, editar e excluir visitas e compromissos"
+      ],
+      "pai": "E6.F2",
+      "sprint": 5
+    },
+    {
+      "key": "E6.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o calendário mensal",
+      "pai": "E6.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-23",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Comunicação e agenda (web)"
+    },
+    {
+      "key": "E6.F2.P1.T2",
+      "tipo": "task",
+      "titulo": "Mostrar os vencimentos no calendário",
+      "pai": "E6.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-23",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Comunicação e agenda (web)"
+    },
+    {
+      "key": "E6.F2.P1.T3",
+      "tipo": "task",
+      "titulo": "Criar, editar e excluir eventos no calendário",
+      "pai": "E6.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-24",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Comunicação e agenda (web)"
+    },
+    {
+      "key": "E7",
+      "tipo": "epic",
+      "titulo": "[Epic] Apoio operacional (web)",
+      "descricao": "Parceiros (prestadores de serviço) e estoque de materiais.",
+      "pai": null
+    },
+    {
+      "key": "E7.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Parceiros",
+      "descricao": "Parte do épico Apoio operacional (web).",
+      "pai": "E7"
+    },
+    {
+      "key": "E7.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero guardar os contatos dos prestadores de serviço, para chamar rápido quando uma casa precisar.",
+      "descricao": "Como Marcos, quero guardar os contatos dos prestadores de serviço, para chamar rápido quando uma casa precisar.",
+      "criterios": [
+        "Nome, serviço, telefone e observações"
+      ],
+      "pai": "E7.F1",
+      "sprint": 5
+    },
+    {
+      "key": "E7.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o cadastro de parceiros",
+      "pai": "E7.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-26",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Apoio operacional (web)"
+    },
+    {
+      "key": "E7.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Estoque",
+      "descricao": "Parte do épico Apoio operacional (web).",
+      "pai": "E7"
+    },
+    {
+      "key": "E7.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como Marcos, quero controlar os materiais em estoque, para saber o que tenho antes de comprar.",
+      "descricao": "Como Marcos, quero controlar os materiais em estoque, para saber o que tenho antes de comprar.",
+      "criterios": [
+        "Nome, quantidade e unidade",
+        "Aumentar e diminuir a quantidade"
+      ],
+      "pai": "E7.F2",
+      "sprint": 5
+    },
+    {
+      "key": "E7.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o cadastro de estoque",
+      "pai": "E7.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-27",
+      "sprint": 5,
+      "area": "web",
+      "epico": "Apoio operacional (web)"
+    },
+    {
+      "key": "E8",
+      "tipo": "epic",
+      "titulo": "[Epic] App Android em Kotlin",
+      "descricao": "App da disciplina de Dispositivos Móveis, usando o mesmo banco do site.",
+      "pai": null
+    },
+    {
+      "key": "E8.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Base do app",
+      "descricao": "Parte do épico App Android em Kotlin.",
+      "pai": "E8"
+    },
+    {
+      "key": "E8.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como usuário do app, quero entrar com a mesma conta do site e navegar entre as telas.",
+      "descricao": "Como usuário do app, quero entrar com a mesma conta do site e navegar entre as telas.",
+      "criterios": [
+        "Projeto Kotlin no Android Studio dentro de mobile/",
+        "LoginActivity com Firebase Authentication",
+        "MainActivity com barra inferior e Fragments (Painel, Casas, Inquilinos)",
+        "O build roda no GitHub Actions"
+      ],
+      "pai": "E8.F1",
+      "sprint": 2
+    },
+    {
+      "key": "E8.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar o projeto Android e conectar ao Firebase",
+      "pai": "E8.F1.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-10-28",
+      "sprint": 1,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar a LoginActivity com Firebase Authentication",
+      "pai": "E8.F1.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-10-29",
+      "sprint": 2,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Criar a MainActivity com navegação inferior e Fragments",
+      "pai": "E8.F1.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-03",
+      "sprint": 2,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F1.P1.T4",
+      "tipo": "task",
+      "titulo": "Ativar o build do Android no GitHub Actions",
+      "pai": "E8.F1.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-03",
+      "sprint": 2,
+      "area": "infra",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Casas no app",
+      "descricao": "Parte do épico App Android em Kotlin.",
+      "pai": "E8"
+    },
+    {
+      "key": "E8.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como usuário do app, quero ver e cadastrar casas pelo celular, com o endereço vindo do CEP.",
+      "descricao": "Como usuário do app, quero ver e cadastrar casas pelo celular, com o endereço vindo do CEP.",
+      "criterios": [
+        "Lista de casas lida do Firestore",
+        "Cadastro com ViaCEP via Retrofit",
+        "Painel com casas por situação"
+      ],
+      "pai": "E8.F2",
+      "sprint": 3
+    },
+    {
+      "key": "E8.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar a lista de casas (RecyclerView + Firestore)",
+      "pai": "E8.F2.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-05",
+      "sprint": 2,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F2.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar a CasaActivity com ViaCEP e geração do código",
+      "pai": "E8.F2.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-09",
+      "sprint": 3,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F2.P1.T3",
+      "tipo": "task",
+      "titulo": "Criar o Fragment Painel com as casas por situação",
+      "pai": "E8.F2.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-12",
+      "sprint": 3,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F3",
+      "tipo": "feature",
+      "titulo": "[Feature] Inquilinos e pagamentos no app",
+      "descricao": "Parte do épico App Android em Kotlin.",
+      "pai": "E8"
+    },
+    {
+      "key": "E8.F3.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como usuário do app, quero cadastrar inquilinos e registrar pagamentos pelo celular.",
+      "descricao": "Como usuário do app, quero cadastrar inquilinos e registrar pagamentos pelo celular.",
+      "criterios": [
+        "Lista e cadastro de inquilinos com cônjuge",
+        "Vincular inquilino à casa e marcar pagamento"
+      ],
+      "pai": "E8.F3",
+      "sprint": 4
+    },
+    {
+      "key": "E8.F3.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar a lista e a InquilinoActivity",
+      "pai": "E8.F3.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-16",
+      "sprint": 4,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F3.P1.T2",
+      "tipo": "task",
+      "titulo": "Vincular inquilino à casa e registrar pagamento",
+      "pai": "E8.F3.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-19",
+      "sprint": 4,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F4",
+      "tipo": "feature",
+      "titulo": "[Feature] Alertas e contato no app",
+      "descricao": "Parte do épico App Android em Kotlin.",
+      "pai": "E8"
+    },
+    {
+      "key": "E8.F4.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como usuário do app, quero ser notificado de atrasos e falar com o inquilino com um toque.",
+      "descricao": "Como usuário do app, quero ser notificado de atrasos e falar com o inquilino com um toque.",
+      "criterios": [
+        "Notificação local diária via WorkManager",
+        "Botões de WhatsApp e ligação por Intent"
+      ],
+      "pai": "E8.F4",
+      "sprint": 5
+    },
+    {
+      "key": "E8.F4.P1.T1",
+      "tipo": "task",
+      "titulo": "Criar a notificação de atraso com WorkManager",
+      "pai": "E8.F4.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-23",
+      "sprint": 5,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F4.P1.T2",
+      "tipo": "task",
+      "titulo": "Criar os botões de WhatsApp e ligação (Intents)",
+      "pai": "E8.F4.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-26",
+      "sprint": 5,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F5",
+      "tipo": "feature",
+      "titulo": "[Feature] Entrega da disciplina",
+      "descricao": "Parte do épico App Android em Kotlin.",
+      "pai": "E8"
+    },
+    {
+      "key": "E8.F5.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero o app estável e o pitch ensaiado, para a apresentação de 07/12.",
+      "descricao": "Como equipe, quero o app estável e o pitch ensaiado, para a apresentação de 07/12.",
+      "criterios": [
+        "APK de release gerado",
+        "README do mobile explica como rodar",
+        "Roteiro de demo de até 10 minutos ensaiado"
+      ],
+      "pai": "E8.F5",
+      "sprint": 6
+    },
+    {
+      "key": "E8.F5.P1.T1",
+      "tipo": "task",
+      "titulo": "Testar, corrigir e gerar o APK",
+      "pai": "E8.F5.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-30",
+      "sprint": 6,
+      "area": "mobile",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F5.P1.T2",
+      "tipo": "task",
+      "titulo": "Escrever o README do mobile",
+      "pai": "E8.F5.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-11-30",
+      "sprint": 6,
+      "area": "docs",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E8.F5.P1.T3",
+      "tipo": "task",
+      "titulo": "Preparar o roteiro da demo e ensaiar o pitch",
+      "pai": "E8.F5.P1",
+      "responsavel": "João",
+      "resp_cod": "J",
+      "entrega": "2026-12-03",
+      "sprint": 6,
+      "area": "docs",
+      "epico": "App Android em Kotlin"
+    },
+    {
+      "key": "E9",
+      "tipo": "epic",
+      "titulo": "[Epic] Validação e entrega final (web)",
+      "descricao": "Testar com o Marcos, corrigir e publicar a versão 1.0.",
+      "pai": null
+    },
+    {
+      "key": "E9.F1",
+      "tipo": "feature",
+      "titulo": "[Feature] Validação com o usuário",
+      "descricao": "Parte do épico Validação e entrega final (web).",
+      "pai": "E9"
+    },
+    {
+      "key": "E9.F1.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero validar o sistema com o Marcos e o pai dele, para saber se ele resolve o problema de verdade.",
+      "descricao": "Como equipe, quero validar o sistema com o Marcos e o pai dele, para saber se ele resolve o problema de verdade.",
+      "criterios": [
+        "Feedback dos testes de sábado registrado em issues",
+        "Ajustes feitos antes da entrega"
+      ],
+      "pai": "E9.F1",
+      "sprint": 6
+    },
+    {
+      "key": "E9.F1.P1.T1",
+      "tipo": "task",
+      "titulo": "Revisar a segurança e os dados pessoais (LGPD) nas regras",
+      "pai": "E9.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-27",
+      "sprint": 5,
+      "area": "infra",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F1.P1.T2",
+      "tipo": "task",
+      "titulo": "Revisar acessibilidade e tamanhos de texto e botões",
+      "pai": "E9.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-11-30",
+      "sprint": 6,
+      "area": "web",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F1.P1.T3",
+      "tipo": "task",
+      "titulo": "Organizar em issues o feedback dos testes com os usuários",
+      "pai": "E9.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-11-30",
+      "sprint": 6,
+      "area": "docs",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F1.P1.T4",
+      "tipo": "task",
+      "titulo": "Ajustar as telas com base no feedback",
+      "pai": "E9.F1.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-12-01",
+      "sprint": 6,
+      "area": "web",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F1.P1.T5",
+      "tipo": "task",
+      "titulo": "Ajustar dados e regras com base no feedback",
+      "pai": "E9.F1.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-12-01",
+      "sprint": 6,
+      "area": "web",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F2",
+      "tipo": "feature",
+      "titulo": "[Feature] Entrega final",
+      "descricao": "Parte do épico Validação e entrega final (web).",
+      "pai": "E9"
+    },
+    {
+      "key": "E9.F2.P1",
+      "tipo": "pbi",
+      "titulo": "[PBI] Como equipe, quero publicar a versão 1.0 documentada, para entregar ao Marcos e ao pai dele.",
+      "descricao": "Como equipe, quero publicar a versão 1.0 documentada, para entregar ao Marcos e ao pai dele.",
+      "criterios": [
+        "Sem bugs críticos abertos",
+        "Manual curto do usuário",
+        "Release v1.0.0 publicada"
+      ],
+      "pai": "E9.F2",
+      "sprint": 6
+    },
+    {
+      "key": "E9.F2.P1.T1",
+      "tipo": "task",
+      "titulo": "Corrigir os bugs abertos",
+      "pai": "E9.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-12-02",
+      "sprint": 6,
+      "area": "web",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F2.P1.T2",
+      "tipo": "task",
+      "titulo": "Preparar dados de demonstração",
+      "pai": "E9.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-12-02",
+      "sprint": 6,
+      "area": "web",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F2.P1.T3",
+      "tipo": "task",
+      "titulo": "Escrever o manual do usuário e fechar o README",
+      "pai": "E9.F2.P1",
+      "responsavel": "Lucas",
+      "resp_cod": "L",
+      "entrega": "2026-12-03",
+      "sprint": 6,
+      "area": "docs",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F2.P1.T4",
+      "tipo": "task",
+      "titulo": "Fazer o deploy final e publicar a release v1.0.0",
+      "pai": "E9.F2.P1",
+      "responsavel": "Mário",
+      "resp_cod": "M",
+      "entrega": "2026-12-03",
+      "sprint": 6,
+      "area": "infra",
+      "epico": "Validação e entrega final (web)"
+    },
+    {
+      "key": "E9.F2.P1.T5",
+      "tipo": "task",
+      "titulo": "Fazer a review final e a retrospectiva",
+      "pai": "E9.F2.P1",
+      "responsavel": "Todos",
+      "resp_cod": "T",
+      "entrega": "2026-12-04",
+      "sprint": 6,
+      "area": "docs",
+      "epico": "Validação e entrega final (web)"
+    }
+  ]
+}

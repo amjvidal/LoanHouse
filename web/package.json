@@ -1,0 +1,11 @@
+{
+  "name": "gerenciador-imobiliario-web",
+  "private": true,
+  "type": "module",
+  "description": "Site do Gerenciador Imobiliário (HTML, CSS e JavaScript puro). O package.json serve só para as ferramentas de verificação e testes.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/checar-sintaxe.js",
+    "lint:html": "npx --yes htmlhint@1.1.4 \"*.html\""
+  }
+}

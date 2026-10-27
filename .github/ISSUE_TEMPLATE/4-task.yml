@@ -1,0 +1,24 @@
+name: Task
+description: Uma tarefa de até um dia, ligada a um PBI.
+labels: ["tipo:task"]
+body:
+  - type: input
+    id: pbi
+    attributes:
+      label: PBI
+      placeholder: "#3"
+  - type: input
+    id: entrega
+    attributes:
+      label: Data de entrega
+      placeholder: "DD/MM"
+    validations:
+      required: true
+  - type: textarea
+    id: pronto
+    attributes:
+      label: Definição de pronto
+      value: |
+        - [ ] Código revisado em pull request
+        - [ ] GitHub Actions passando
+        - [ ] Card movido para Concluído

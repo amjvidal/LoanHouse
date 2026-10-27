@@ -1,0 +1,31 @@
+/* Tokens do sistema. Pedido do cliente: fundo branco, azul claro e cinza; cores fortes só para status. */
+:root {
+  --cor-fundo: #ffffff;
+  --cor-superficie: #f3f6fa;
+  --cor-texto: #1f2933;
+  --cor-texto-suave: #52606d;
+  --cor-borda: #cbd2d9;
+  --cor-primaria: #2f6fb3;
+  --cor-primaria-clara: #e3eefa;
+
+  /* Status: sempre acompanhados de texto, nunca só a cor (RNF de acessibilidade). */
+  --cor-alugada: #2e7d32;
+  --cor-vaga: #5f6b7a;
+  --cor-atrasada: #c62828;
+
+  --fonte: "Segoe UI", Roboto, Arial, sans-serif;
+  --texto-base: 20px;     /* mínimo de 18px pedido nos requisitos */
+  --texto-grande: 26px;
+  --texto-titulo: 36px;
+  --alvo-toque: 64px;     /* tamanho mínimo de botões e ícones */
+  --raio: 12px;
+  --espaco: 16px;
+}
+
+* { box-sizing: border-box; }
+html { font-size: var(--texto-base); }
+body { margin: 0; background: var(--cor-fundo); color: var(--cor-texto); font-family: var(--fonte); line-height: 1.5; }
+h1 { font-size: var(--texto-titulo); margin: 0 0 var(--espaco); }
+h2 { font-size: var(--texto-grande); margin: 0 0 var(--espaco); }
+a { color: var(--cor-primaria); }
+:focus-visible { outline: 4px solid var(--cor-primaria); outline-offset: 2px; }

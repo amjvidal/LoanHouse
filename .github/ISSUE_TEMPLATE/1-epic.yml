@@ -1,0 +1,18 @@
+name: Epic
+description: Um grande objetivo do produto, dividido em Features.
+title: "[Epic] "
+labels: ["tipo:epic"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: O que este épico resolve para o Marcos?
+    validations:
+      required: true
+  - type: textarea
+    id: features
+    attributes:
+      label: Features
+      description: As Features entram como sub-issues deste épico.
+      value: "Adicione as Features como sub-issues."

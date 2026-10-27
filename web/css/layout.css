@@ -1,0 +1,6 @@
+.topo { background: var(--cor-superficie); border-bottom: 1px solid var(--cor-borda); }
+.menu { display: flex; flex-wrap: wrap; gap: 8px; padding: var(--espaco); max-width: 1200px; margin: 0 auto; }
+.conteudo { max-width: 1200px; margin: 0 auto; padding: calc(var(--espaco) * 2) var(--espaco); }
+.grupo { margin-bottom: calc(var(--espaco) * 2); }
+.grade-casas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--espaco); }
+.pagina-login { min-height: 100vh; display: grid; place-items: center; background: var(--cor-superficie); }

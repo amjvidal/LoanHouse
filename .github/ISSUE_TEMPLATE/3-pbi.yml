@@ -1,0 +1,29 @@
+name: PBI (história de usuário)
+description: Item do Product Backlog, no formato de história de usuário.
+title: "[PBI] Como ..., quero ..., para ..."
+labels: ["tipo:pbi"]
+body:
+  - type: input
+    id: feature
+    attributes:
+      label: Feature
+      placeholder: "#2"
+  - type: textarea
+    id: historia
+    attributes:
+      label: História
+      value: "Como [quem], quero [o quê], para [por quê]."
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: dropdown
+    id: plataforma
+    attributes:
+      label: Plataforma
+      options: ["Web", "Android", "Web e Android"]

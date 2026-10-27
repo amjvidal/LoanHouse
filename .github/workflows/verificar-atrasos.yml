@@ -1,0 +1,29 @@
+name: Verificação diária de atrasos
+
+# Roda todo dia às 06:00 de Recife (09:00 UTC). Também dá pra rodar à mão em Actions > Run workflow.
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      simular:
+        description: "Só mostrar o que mudaria, sem gravar"
+        type: boolean
+        default: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts/atrasos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Verificar
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node verificar-atrasos.mjs ${{ inputs.simular && '--simular' || '' }}

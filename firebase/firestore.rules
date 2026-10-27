@@ -1,0 +1,69 @@
+rules_version = '2';
+
+// Só entra quem tem login E um documento em /usuarios/{uid} (criado à mão no console pelo Mário).
+// O script de verificação diária usa a conta de serviço (Admin SDK), que não passa por estas regras.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() {
+      return request.auth != null;
+    }
+
+    function autorizado() {
+      return logado() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+
+    function situacaoValida(s) {
+      return s in ['vaga', 'alugada', 'atrasada'];
+    }
+
+    match /usuarios/{uid} {
+      allow read: if logado() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /casas/{codigo} {
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && codigo.matches('^[A-Z]{3}-[0-9A-Z]+(-[0-9]+)?$')
+        && request.resource.data.codigo == codigo
+        && situacaoValida(request.resource.data.situacao);
+
+      match /reclamacoes/{id} {
+        allow read, write: if autorizado();
+      }
+      match /contas/{id} {
+        allow read, write: if autorizado();
+      }
+    }
+
+    match /inquilinos/{id} {
+      allow read, write: if autorizado();
+      match /fiadores/{fiadorId} {
+        allow read, write: if autorizado();
+      }
+    }
+
+    match /contratos/{id} {
+      allow read, write: if autorizado()
+        && (request.method == 'delete' || request.resource.data.status in ['ativo', 'encerrado']);
+    }
+
+    match /pagamentos/{id} {
+      allow read, write: if autorizado()
+        && (request.method == 'delete' || request.resource.data.status in ['pendente', 'pago', 'atrasado']);
+    }
+
+    match /eventos/{id} {
+      allow read, write: if autorizado();
+    }
+
+    match /parceiros/{id} {
+      allow read, write: if autorizado();
+    }
+
+    match /estoque/{id} {
+      allow read, write: if autorizado();
+    }
+  }
+}

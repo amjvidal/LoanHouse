@@ -1,0 +1,24 @@
+.menu__item, .menu__sair {
+  min-height: var(--alvo-toque); display: inline-flex; align-items: center; padding: 0 20px;
+  border-radius: var(--raio); font-size: var(--texto-base); text-decoration: none; color: var(--cor-texto);
+  background: none; border: 2px solid transparent; cursor: pointer; font-family: inherit;
+}
+.menu__item--ativo { background: var(--cor-primaria-clara); border-color: var(--cor-primaria); }
+.menu__sair { margin-left: auto; border-color: var(--cor-borda); }
+
+.botao { min-height: var(--alvo-toque); padding: 0 28px; border-radius: var(--raio); font-size: var(--texto-grande); font-family: inherit; cursor: pointer; border: 2px solid var(--cor-primaria); }
+.botao--primario { background: var(--cor-primaria); color: #fff; }
+.botao:disabled { opacity: .6; cursor: wait; }
+
+.cartao-login { width: min(480px, 92vw); background: var(--cor-fundo); padding: 40px; border-radius: var(--raio); border: 1px solid var(--cor-borda); }
+.cartao-login form { display: grid; gap: 12px; }
+input, select, textarea { min-height: var(--alvo-toque); font-size: var(--texto-base); padding: 0 16px; border: 2px solid var(--cor-borda); border-radius: var(--raio); font-family: inherit; }
+.mensagem-erro { color: var(--cor-atrasada); font-weight: 600; margin: 0; }
+
+.casa { display: grid; gap: 4px; padding: 24px; border-radius: var(--raio); border: 3px solid; text-decoration: none; color: var(--cor-texto); background: var(--cor-fundo); }
+.casa__codigo { font-size: var(--texto-grande); font-weight: 700; }
+.casa__situacao { font-weight: 600; }
+.casa--alugada { border-color: var(--cor-alugada); } .casa--alugada .casa__situacao { color: var(--cor-alugada); }
+.casa--vaga { border-color: var(--cor-vaga); } .casa--vaga .casa__situacao { color: var(--cor-vaga); }
+.casa--atrasada { border-color: var(--cor-atrasada); background: #fdecea; } .casa--atrasada .casa__situacao { color: var(--cor-atrasada); }
+.vazio { color: var(--cor-texto-suave); }

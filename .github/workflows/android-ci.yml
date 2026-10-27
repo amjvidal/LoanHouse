@@ -1,0 +1,42 @@
+name: Android - build
+
+# Precisa de: secret GOOGLE_SERVICES_JSON (conteúdo do google-services.json em base64)
+#   base64 -w0 mobile/app/google-services.json   (copie a saída para o secret)
+on:
+  pull_request:
+    paths: ["mobile/**", ".github/workflows/android-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["mobile/**", ".github/workflows/android-ci.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Projeto Android já existe?
+        id: projeto
+        run: |
+          if [ -f gradlew ]; then echo "existe=true" >> "$GITHUB_OUTPUT"; else echo "existe=false" >> "$GITHUB_OUTPUT"; echo "Ainda não há projeto Android em mobile/. Nada a compilar."; fi
+      - uses: actions/setup-java@v4
+        if: steps.projeto.outputs.existe == 'true'
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.projeto.outputs.existe == 'true'
+      - name: google-services.json
+        if: steps.projeto.outputs.existe == 'true'
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > app/google-services.json
+      - name: Compilar e testar
+        if: steps.projeto.outputs.existe == 'true'
+        run: chmod +x gradlew && ./gradlew assembleDebug testDebugUnitTest --no-daemon
+      - uses: actions/upload-artifact@v4
+        if: steps.projeto.outputs.existe == 'true'
+        with:
+          name: app-debug
+          path: mobile/app/build/outputs/apk/debug/*.apk

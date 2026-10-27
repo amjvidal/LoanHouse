@@ -1,0 +1,7 @@
+{
+  "name": "verificar-atrasos",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "node verificar-atrasos.mjs", "simular": "node verificar-atrasos.mjs --simular" },
+  "dependencies": { "firebase-admin": "^12.7.0" }
+}

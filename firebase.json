@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "web",
+    "ignore": ["**/.*", "**/node_modules/**", "package.json", "tests/**", "scripts/**"]
+  },
+  "firestore": {
+    "rules": "firebase/firestore.rules",
+    "indexes": "firebase/firestore.indexes.json"
+  }
+}

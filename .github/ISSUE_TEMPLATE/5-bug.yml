@@ -1,0 +1,23 @@
+name: Bug
+description: Algo que não funciona como deveria.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como reproduzir
+      value: "1. \n2. \n3. "
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: dropdown
+    id: plataforma
+    attributes:
+      label: Plataforma
+      options: ["Web", "Android"]

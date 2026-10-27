@@ -1,0 +1,30 @@
+# Segredos: NUNCA commitar
+google-services.json
+*service-account*.json
+*-firebase-adminsdk-*.json
+.env
+.env.*
+
+# Node / Firebase
+node_modules/
+.firebase/
+firebase-debug.log*
+scripts/github/.estado-backlog.json
+
+# Android (mobile/)
+mobile/.gradle/
+mobile/build/
+mobile/app/build/
+mobile/local.properties
+mobile/.idea/
+mobile/captures/
+*.iml
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Sistema
+.DS_Store
+Thumbs.db
+.vscode/
