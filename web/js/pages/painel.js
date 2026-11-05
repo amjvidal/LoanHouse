@@ -57,8 +57,10 @@ function renderizarAlertaPendencias(comPendencia) {
   `;
 }
 
+montarMenu("painel");
+preencherCabecalhoUsuario();
+
 exigirLogin(async (usuario) => {
-  montarMenu("painel");
   preencherCabecalhoUsuario(usuario);
 
   const casas = ordenarCasasPorPrioridade(await listarCasas());

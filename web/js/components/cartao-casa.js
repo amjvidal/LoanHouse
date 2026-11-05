@@ -11,7 +11,9 @@ export function formatarMoeda(valor) {
 }
 
 export function iniciaisDe(nome) {
-  const partes = String(nome || "Marcos Junior").trim().split(/\s+/);
+  const limpo = String(nome || "").trim();
+  if (!limpo) return "";
+  const partes = limpo.split(/\s+/);
   if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
@@ -24,7 +26,11 @@ export function preencherCabecalhoUsuario(usuario) {
     elMes.textContent = `${prefixo} • ${MESES[agora.getMonth()]} de ${agora.getFullYear()}`;
   }
 
-  const nomeUsuario = usuario?.displayName || "Marcos Junior";
+  const nomeDireto = usuario?.displayName || usuario?.email?.split("@")[0] || "";
+  if (nomeDireto) {
+    localStorage.setItem("loanhouse_usuario_nome", nomeDireto);
+  }
+  const nomeUsuario = nomeDireto || localStorage.getItem("loanhouse_usuario_nome") || "";
   const elNome = document.querySelector("[data-usuario-nome]");
   const elIniciais = document.querySelector("[data-usuario-iniciais]");
   if (elNome) elNome.textContent = nomeUsuario;
@@ -108,3 +114,4 @@ export function renderizarCardCasa(c) {
     </article>
   `;
 }
+

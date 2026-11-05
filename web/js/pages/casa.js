@@ -262,8 +262,10 @@ botaoExcluir?.addEventListener("click", async () => {
   }
 });
 
+montarMenu("casas");
+preencherCabecalhoUsuario();
+
 exigirLogin(async (usuario) => {
-  montarMenu("casas");
   preencherCabecalhoUsuario(usuario);
 
   if (!modoEdicao) {
