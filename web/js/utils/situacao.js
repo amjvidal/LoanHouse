@@ -33,3 +33,61 @@ export function calcularSituacao(contratoAtivo, pagamentos = [], hoje = hojeISO(
   if (!contratoAtivo) return SITUACAO.VAGA;
   return pagamentos.some((p) => mensalidadeAtrasada(p, hoje)) ? SITUACAO.ATRASADA : SITUACAO.ALUGADA;
 }
+
+const ROTULOS_PENDENCIA = {
+  aluguel: "Aluguel Não Pago",
+  agua: "Água Pendente",
+  luz: "Luz Pendente",
+  iptu: "IPTU Pendente",
+};
+
+// Lista todas as pendências financeiras/operacionais de uma casa (aluguel, água, luz, IPTU).
+export function listarPendenciasCasa(casa = {}, { pagamentos = [], contas = [], hoje = hojeISO() } = {}) {
+  const pendencias = [];
+  const adicionar = (tipo) => {
+    if (!pendencias.some((p) => p.tipo === tipo)) {
+      pendencias.push({ tipo, rotulo: ROTULOS_PENDENCIA[tipo] ?? tipo });
+    }
+  };
+
+  if (Array.isArray(casa.pendencias)) {
+    for (const tipo of casa.pendencias) adicionar(String(tipo).toLowerCase());
+  }
+
+  if (casa.situacao === SITUACAO.ATRASADA || casa.aluguelAtrasado === true || pagamentos.some((p) => mensalidadeAtrasada(p, hoje))) {
+    adicionar("aluguel");
+  }
+
+  if (casa.aguaPendente === true || contas.some((c) => c.tipo === "agua" && !c.pago && (!c.vencimento || c.vencimento < hoje))) {
+    adicionar("agua");
+  }
+
+  if (casa.luzPendente === true || contas.some((c) => c.tipo === "luz" && !c.pago && (!c.vencimento || c.vencimento < hoje))) {
+    adicionar("luz");
+  }
+
+  if (casa.iptuPendente === true || (casa.iptuAno && casa.iptuPago === false)) {
+    adicionar("iptu");
+  }
+
+  return pendencias;
+}
+
+export function temPendencia(casa, opcoes) {
+  return listarPendenciasCasa(casa, opcoes).length > 0;
+}
+
+// Ordem de prioridade: 0 = Com pendência(s), 1 = Alugada em dia, 2 = Vaga.
+export function prioridadeCasa(casa, opcoes) {
+  if (temPendencia(casa, opcoes)) return 0;
+  if (casa?.situacao === SITUACAO.ALUGADA) return 1;
+  return 2;
+}
+
+export function ordenarCasasPorPrioridade(casas = [], opcoes) {
+  return [...casas].sort((a, b) => {
+    const diff = prioridadeCasa(a, opcoes) - prioridadeCasa(b, opcoes);
+    if (diff !== 0) return diff;
+    return String(a.codigo || "").localeCompare(String(b.codigo || ""), "pt-BR");
+  });
+}
