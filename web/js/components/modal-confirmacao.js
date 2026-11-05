@@ -99,3 +99,4 @@ export function abrirModalConfirmacao({
   document.body.appendChild(fundo);
   btnCancelar.focus();
 }
+
