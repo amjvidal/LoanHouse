@@ -5,8 +5,10 @@ import { listarCasas } from "../services/casas.js";
 import { temPendencia, ordenarCasasPorPrioridade } from "../utils/situacao.js";
 import { preencherCabecalhoUsuario, renderizarCardCasa } from "../components/cartao-casa.js";
 
+montarMenu("casas");
+preencherCabecalhoUsuario();
+
 exigirLogin(async (usuario) => {
-  montarMenu("casas");
   preencherCabecalhoUsuario(usuario);
 
   const casas = ordenarCasasPorPrioridade(await listarCasas());
