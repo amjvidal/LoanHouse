@@ -3,21 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Entrar · Gerenciador Imobiliário</title>
+  <title>Entrar · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
 </head>
 <body class="pagina-login">
   <main class="cartao-login">
-    <h1>Gerenciador Imobiliário</h1>
+    <div class="login-marca">
+      <div class="login-marca__icone" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 17.5L20 6l14 11.5V33a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V17.5z"/>
+          <path d="M15.5 35V23a1.5 1.5 0 0 1 1.5-1.5h6a1.5 1.5 0 0 1 1.5 1.5v12"/>
+        </svg>
+      </div>
+      <div class="login-marca__texto">
+        <h1 class="login-marca__titulo">LoanHouse</h1>
+        <p class="login-marca__subtitulo">Gerenciamento de Aluguéis de Imóveis</p>
+      </div>
+    </div>
+
+    <div class="login-cabecalho">
+      <h2 class="login-cabecalho__titulo">Acesse sua conta</h2>
+      <p class="login-cabecalho__subtitulo">Entre para gerenciar seus imóveis com segurança.</p>
+    </div>
+
     <form id="form-login" novalidate>
-      <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" autocomplete="username" required>
-      <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+      <div class="campo">
+        <label for="email">Usuário</label>
+        <div class="campo-icone">
+          <input id="email" name="email" type="email" placeholder="Digite seu usuário" autocomplete="username" required>
+          <span class="campo-icone__sufixo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <div class="campo-icone">
+          <input id="senha" name="senha" type="password" placeholder="Digite sua senha" autocomplete="current-password" required>
+          <button id="alternar-senha" class="campo-icone__botao" type="button" aria-label="Mostrar ou ocultar senha">
+            <svg id="icone-olho-fechado" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94"/>
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19"/>
+              <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+              <line x1="2" y1="2" x2="22" y2="22"/>
+            </svg>
+            <svg id="icone-olho-aberto" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" hidden>
+              <path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <p id="erro-login" class="mensagem-erro" role="alert" hidden></p>
-      <button class="botao botao--primario" type="submit">Entrar</button>
+
+      <button class="botao botao--primario botao--bloco" type="submit">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        <span>Entrar no Sistema</span>
+      </button>
     </form>
   </main>
   <script type="module" src="js/pages/login.js"></script>
