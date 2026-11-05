@@ -1,11 +1,14 @@
 // Página: detalhe e formulário de casa (casa.html?id=SAO-123 ou casa.html para nova casa)
 import { exigirLogin } from "../services/auth.js";
 import { montarMenu } from "../components/menu.js";
-import { buscarCasa, criarCasa, atualizarCasa, excluirCasa } from "../services/casas.js";
+import {
+  buscarCasa, criarCasa, atualizarCasa, excluirCasa, validarCasa,
+} from "../services/casas.js";
 import { buscarCep } from "../services/viacep.js";
 import { gerarCodigoCasa } from "../utils/codigo-casa.js";
 import { temPendencia } from "../utils/situacao.js";
 import { preencherCabecalhoUsuario } from "../components/cartao-casa.js";
+import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -17,6 +20,10 @@ const estadoContas = {
   aguaPendente: false,
   luzPendente: false,
 };
+
+const CAMPOS_VALIDAVEIS = [
+  "cep", "bairro", "rua", "numero", "valorAluguel", "situacao", "cidade", "uf",
+];
 
 const form = document.querySelector("#form-casa");
 const feedback = document.querySelector("#feedback-casa");
@@ -31,6 +38,27 @@ const elBadgeTopo = document.querySelector("[data-badge-topo]");
 const elIconeCasa = document.querySelector("[data-icone-casa]");
 const elStatusCep = document.querySelector("[data-status-cep]");
 const elAlertaNumero = document.querySelector("[data-alerta-numero]");
+
+function limparErroCampo(nomeCampo) {
+  const el = form[nomeCampo];
+  if (!el) return;
+  el.classList.remove("input--obrigatorio");
+  el.removeAttribute("aria-invalid");
+}
+
+function limparTodosErrosVisuais() {
+  CAMPOS_VALIDAVEIS.forEach(limparErroCampo);
+  feedback.hidden = true;
+}
+
+function destacarCampoComErro(nomeCampo) {
+  const el = nomeCampo ? form[nomeCampo] : null;
+  if (!el) return;
+  if (el.disabled) el.disabled = false;
+  el.classList.add("input--obrigatorio");
+  el.setAttribute("aria-invalid", "true");
+  el.focus();
+}
 
 function badgeTopoHTML(situacao, possuiPendencia) {
   if (possuiPendencia || situacao === "atrasada") {
@@ -71,14 +99,22 @@ function sincronizarBotoesToggle() {
   });
 }
 
+function obterCodigoPreview(bairro, numero) {
+  if (modoEdicao) return codigoUrl;
+  if (!bairro || !numero) return "NOVA";
+  try {
+    return gerarCodigoCasa(bairro, numero);
+  } catch {
+    return "NOVA";
+  }
+}
+
 function atualizarCabecalhoCasa() {
   const bairro = form.bairro.value.trim();
   const numero = form.numero.value.trim();
   const cidade = form.cidade.value.trim() || "Belo Jardim";
   const uf = form.uf.value.trim() || "PE";
-  const codigo = modoEdicao
-    ? codigoUrl
-    : (bairro && numero ? gerarCodigoCasa(bairro, numero) : "NOVA");
+  const codigo = obterCodigoPreview(bairro, numero);
 
   if (elCodigoPreview) elCodigoPreview.textContent = codigo;
   if (elSubtituloPagina) {
@@ -129,6 +165,8 @@ document.querySelectorAll("[data-toggle-conta]").forEach((btn) => {
 });
 
 form.situacao.addEventListener("change", () => {
+  limparErroCampo("situacao");
+  feedback.hidden = true;
   if (form.situacao.value === "atrasada") {
     estadoContas.aluguelPago = false;
   } else {
@@ -151,6 +189,17 @@ function atualizarDestaqueNumero() {
   form.numero.classList.toggle("input--obrigatorio", destacar);
   if (elAlertaNumero) elAlertaNumero.hidden = !destacar;
 }
+
+CAMPOS_VALIDAVEIS.forEach((campo) => {
+  form[campo]?.addEventListener("input", () => {
+    limparErroCampo(campo);
+    feedback.hidden = true;
+  });
+});
+
+form.uf?.addEventListener("input", () => {
+  form.uf.value = form.uf.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2);
+});
 
 ["bairro", "numero", "cidade", "uf"].forEach((campo) => {
   form[campo]?.addEventListener("input", () => {
@@ -189,14 +238,17 @@ async function consultarCepSeCompleto() {
     if (endereco.cidade) form.cidade.value = endereco.cidade;
     if (endereco.uf) form.uf.value = endereco.uf;
     if (elStatusCep) elStatusCep.textContent = "";
+    limparErroCampo("cep");
+    limparErroCampo("rua");
+    limparErroCampo("bairro");
     atualizarDestaqueNumero();
     atualizarCabecalhoCasa();
     if (!form.numero.value.trim()) {
       form.numero.focus();
     }
   } catch (e) {
-    if (!modoEdicao) bloquearEndereco(true);
-    if (elStatusCep) elStatusCep.textContent = `(${e.message})`;
+    bloquearEndereco(false);
+    if (elStatusCep) elStatusCep.textContent = `(${e.message} — preencha manualmente)`;
   }
 }
 
@@ -210,19 +262,31 @@ form.cep.addEventListener("blur", consultarCepSeCompleto);
 
 form.addEventListener("submit", async (evento) => {
   evento.preventDefault();
-  feedback.hidden = true;
+  limparTodosErrosVisuais();
   botaoSalvar.disabled = true;
 
   try {
+    if (form.valorAluguel.validity?.badInput) {
+      const erroNumero = new Error("Informe um valor numérico válido para o aluguel.");
+      erroNumero.campo = "valorAluguel";
+      throw erroNumero;
+    }
+
+    const cepDigitos = form.cep.value.replace(/\D/g, "");
+    const cepFormatado = cepDigitos.length === 8
+      ? `${cepDigitos.slice(0, 5)}-${cepDigitos.slice(5)}`
+      : form.cep.value.trim();
+    const textoValor = form.valorAluguel.value.trim();
     const situacaoEscolhida = !estadoContas.aluguelPago ? "atrasada" : form.situacao.value;
+
     const dados = {
       rua: form.rua.value.trim(),
       numero: form.numero.value.trim(),
       bairro: form.bairro.value.trim(),
-      cep: form.cep.value.trim(),
-      cidade: form.cidade.value.trim() || "Belo Jardim",
-      uf: (form.uf.value.trim() || "PE").toUpperCase(),
-      valorAluguel: Number(form.valorAluguel.value || 0),
+      cep: cepFormatado,
+      cidade: form.cidade.value.trim(),
+      uf: form.uf.value.trim().toUpperCase(),
+      valorAluguel: textoValor === "" ? 0 : Number(textoValor),
       situacao: situacaoEscolhida,
       inquilinoNome: form.inquilinoNome.value.trim() || null,
       aluguelAtrasado: !estadoContas.aluguelPago,
@@ -232,6 +296,8 @@ form.addEventListener("submit", async (evento) => {
       luzPendente: estadoContas.luzPendente,
     };
 
+    validarCasa(dados);
+
     if (modoEdicao) {
       await atualizarCasa(codigoUrl, dados);
       location.replace("casas.html");
@@ -240,26 +306,39 @@ form.addEventListener("submit", async (evento) => {
       location.replace(`casa.html?id=${encodeURIComponent(novoCodigo)}`);
     }
   } catch (e) {
-    feedback.textContent = e.message;
+    destacarCampoComErro(e.campo);
+    feedback.textContent = e.message || "Não foi possível salvar os dados do imóvel.";
     feedback.hidden = false;
+    feedback.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
   } finally {
     botaoSalvar.disabled = false;
   }
 });
 
-botaoExcluir?.addEventListener("click", async () => {
+botaoExcluir?.addEventListener("click", () => {
   if (!modoEdicao) return;
-  const confirmar = window.confirm(`Tem certeza que deseja excluir a casa ${codigoUrl}? Esta ação não pode ser desfeita.`);
-  if (!confirmar) return;
-  botaoExcluir.disabled = true;
-  try {
-    await excluirCasa(codigoUrl);
-    location.replace("casas.html");
-  } catch (e) {
-    feedback.textContent = e.message || "Não foi possível excluir a casa.";
-    feedback.hidden = false;
-    botaoExcluir.disabled = false;
-  }
+  const enderecoResumo = [form.rua.value.trim(), form.numero.value.trim()].filter(Boolean).join(", ");
+  const situacaoAtual = form.situacao.value;
+  const avisoSituacao = situacaoAtual === "atrasada"
+    ? "Atenção: este imóvel está marcado com aluguel atrasado."
+    : situacaoAtual === "alugada"
+      ? "Atenção: este imóvel está marcado como alugado no momento."
+      : "";
+
+  abrirModalConfirmacao({
+    titulo: `Apagar casa ${codigoUrl}?`,
+    mensagem: enderecoResumo
+      ? `${enderecoResumo}. Esta ação apaga o cadastro do imóvel e não pode ser desfeita.`
+      : "Esta ação apaga o cadastro do imóvel e não pode ser desfeita.",
+    aviso: avisoSituacao,
+    rotuloConfirmar: "Sim, apagar",
+    rotuloProcessando: "Apagando...",
+    rotuloCancelar: "Cancelar",
+    aoConfirmar: async () => {
+      await excluirCasa(codigoUrl);
+      location.replace("casas.html");
+    },
+  });
 });
 
 montarMenu("casas");
