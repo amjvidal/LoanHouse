@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Casas · Gerenciador Imobiliário</title>
+  <title>Casas · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
@@ -11,8 +11,34 @@
 <body>
   <header class="topo"><nav class="menu" data-menu></nav></header>
   <main class="conteudo">
-    <h1>Casas</h1>
-    <div data-conteudo></div>
+    <header class="painel-topo">
+      <div>
+        <h1 class="painel-topo__titulo">Casas</h1>
+        <p class="painel-topo__subtitulo" data-mes-atual data-prefixo="Catálogo completo de imóveis">Catálogo completo de imóveis • Novembro de 2026</p>
+      </div>
+      <div class="usuario-chip">
+        <span class="usuario-chip__avatar" data-usuario-iniciais>MJ</span>
+        <span class="usuario-chip__nome" data-usuario-nome>Marcos Junior</span>
+      </div>
+    </header>
+
+    <section class="secao-imoveis">
+      <div class="secao-cabecalho">
+        <div>
+          <h2 class="secao-cabecalho__titulo">Todos os imóveis</h2>
+          <p class="secao-cabecalho__subtitulo" data-resumo-casas>Carregando imóveis...</p>
+        </div>
+        <a class="botao botao--primario" href="casa.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Cadastrar Casa</span>
+        </a>
+      </div>
+
+      <div class="grade-casas-continua" data-conteudo></div>
+    </section>
   </main>
   <script type="module" src="js/pages/casas.js"></script>
 </body>
