@@ -142,6 +142,7 @@
 .campo {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 .campo label {
   font-size: 16px;
@@ -179,6 +180,8 @@
 }
 
 input, select, textarea {
+  width: 100%;
+  min-width: 0;
   min-height: var(--alvo-toque);
   font-size: var(--texto-base);
   padding: 0 16px;
@@ -187,7 +190,18 @@ input, select, textarea {
   font-family: inherit;
   color: var(--cor-texto);
   background: var(--cor-fundo);
-  transition: border-color .15s, box-shadow .15s;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+input:disabled, select:disabled, textarea:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+input.input--obrigatorio {
+  border: 2px solid #dc2626;
+  background: #fef2f2;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
 }
 input::placeholder, textarea::placeholder {
   color: #64748b;
@@ -478,9 +492,203 @@ input:focus, select:focus, textarea:focus {
 .casa--atrasada { border-color: var(--cor-atrasada); background: #fdecea; } .casa--atrasada .casa__situacao { color: var(--cor-atrasada); }
 .vazio { color: var(--cor-texto-suave); font-size: 15px; margin: 8px 0; }
 
+/* Detalhes e Edição da Casa */
+.casa-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.casa-cabecalho__info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.casa-cabecalho__codigo {
+  font-family: var(--fonte-titulo);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin: 0;
+  line-height: 1.15;
+}
+.casa-cabecalho__legenda {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--cor-texto-suave);
+}
+.casa-cabecalho__acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.botao--compacto {
+  min-height: 46px;
+  padding: 0 20px;
+  font-size: 15px;
+}
+.botao--secundario {
+  background: #ffffff;
+  border: 1px solid var(--cor-borda);
+  color: #475569;
+}
+.botao--secundario:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+.botao--perigo {
+  background: #ffffff;
+  border: 1px solid #d98282;
+  color: #a62b2b;
+}
+.botao--perigo:hover:not(:disabled) {
+  background: #fdf2f2;
+  border-color: #b91c1c;
+}
+
+.pilha-secoes {
+  display: grid;
+  gap: 24px;
+}
+
+.cartao-secao {
+  background: #ffffff;
+  border: 1px solid #e6ebf1;
+  border-radius: 14px;
+  padding: 28px;
+  display: grid;
+  gap: 20px;
+}
+.cartao-secao__cabecalho {
+  margin-bottom: 2px;
+}
+.cartao-secao__titulo {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin: 0 0 4px;
+}
+.cartao-secao__subtitulo {
+  margin: 0;
+  font-size: 15px;
+  color: var(--cor-texto-suave);
+}
+
+.grade-campos {
+  display: grid;
+  gap: 20px;
+}
+.grade-campos--rua-numero {
+  grid-template-columns: 1fr 220px;
+}
+.grade-campos--2col {
+  grid-template-columns: 1fr 1fr;
+}
+.grade-campos--aluguel-inquilino {
+  grid-template-columns: 1fr 280px;
+  align-items: end;
+}
+.grade-campos--4col {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.grade-campos--3col {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.campo__dica {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--cor-primaria);
+}
+.campo__alerta {
+  font-weight: 600;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.grupo-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.opcao-status {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid #dbe2ea;
+  background: #ffffff;
+  color: #475569;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.opcao-status:hover {
+  background: #f8fafc;
+}
+.opcao-status--pago.opcao-status--ativa {
+  background: #e8f5e9;
+  border: 1.5px solid #2e6b3e;
+  color: #2e6b3e;
+}
+.opcao-status--pendente {
+  color: var(--cor-primaria);
+}
+.opcao-status--pendente.opcao-status--ativa {
+  background: #fdecea;
+  border: 1.5px solid #9c2b2b;
+  color: #9c2b2b;
+}
+
+.campo-inquilino {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.campo-inquilino svg {
+  position: absolute;
+  left: 14px;
+  color: var(--cor-texto-suave);
+  pointer-events: none;
+}
+.campo-inquilino input {
+  width: 100%;
+  min-height: 48px;
+  padding-left: 42px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.divisor-secao {
+  border: none;
+  border-top: 1px solid #edf2f7;
+  margin: 4px 0;
+}
+
+.area-anexos-vazia {
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  text-align: center;
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
-  .grade-casas-continua {
+  .grade-casas-continua,
+  .grade-campos--rua-numero,
+  .grade-campos--2col,
+  .grade-campos--aluguel-inquilino,
+  .grade-campos--4col,
+  .grade-campos--3col {
     grid-template-columns: 1fr;
   }
 }

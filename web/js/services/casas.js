@@ -17,18 +17,27 @@ export async function buscarCasa(codigo) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+export function validarCasa(dados = {}) {
+  if (!String(dados.rua || "").trim()) throw new Error("Informe a rua do imóvel.");
+  if (!String(dados.numero || "").trim()) throw new Error("Informe o número do imóvel.");
+  if (!String(dados.bairro || "").trim()) throw new Error("Informe o bairro do imóvel.");
+  const cepNumeros = String(dados.cep || "").replace(/\D/g, "");
+  if (cepNumeros.length !== 8) throw new Error("Informe um CEP válido com 8 números.");
+}
+
 // O código da casa é o ID do documento (ex.: casas/BOA-123).
 export async function criarCasa(dados) {
+  validarCasa(dados);
   const existentes = (await listarCasas()).map((c) => c.codigo);
   const codigo = codigoDisponivel(gerarCodigoCasa(dados.bairro, dados.numero), existentes);
   await setDoc(doc(db, "casas", codigo), {
-    ...dados,
-    codigo,
     situacao: SITUACAO.VAGA,
     contratoAtivoId: null,
     inquilinoAtualId: null,
     fotos: [],
     documentos: [],
+    ...dados,
+    codigo,
     criadoEm: serverTimestamp(),
     atualizadoEm: serverTimestamp(),
   });
@@ -36,7 +45,8 @@ export async function criarCasa(dados) {
 }
 
 export function atualizarCasa(codigo, dados) {
-  return updateDoc(doc(db, "casas", codigo), { ...dados, atualizadoEm: serverTimestamp() });
+  validarCasa(dados);
+  return updateDoc(doc(db, "casas", codigo), { ...dados, codigo, atualizadoEm: serverTimestamp() });
 }
 
 export function excluirCasa(codigo) {
