@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel · Gerenciador Imobiliário</title>
+  <title>Dashboard Principal · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
@@ -11,11 +11,60 @@
 <body>
   <header class="topo"><nav class="menu" data-menu></nav></header>
   <main class="conteudo">
-    <h1>Painel</h1>
+    <header class="painel-topo">
+      <div>
+        <h1 class="painel-topo__titulo">Dashboard Principal</h1>
+        <p class="painel-topo__subtitulo" data-mes-atual>Visão geral dos imóveis • Novembro de 2026</p>
+      </div>
+      <div class="usuario-chip">
+        <span class="usuario-chip__avatar" data-usuario-iniciais>MJ</span>
+        <span class="usuario-chip__nome" data-usuario-nome>Marcos Junior</span>
+      </div>
+    </header>
+
     <section class="alertas" data-alertas aria-live="polite"></section>
-    <section class="grupo"><h2>Atrasadas</h2><div class="grade-casas" data-situacao="atrasada"></div></section>
-    <section class="grupo"><h2>Alugadas</h2><div class="grade-casas" data-situacao="alugada"></div></section>
-    <section class="grupo"><h2>Vagas</h2><div class="grade-casas" data-situacao="vaga"></div></section>
+
+    <section class="secao-imoveis">
+      <div class="secao-cabecalho">
+        <div>
+          <h2 class="secao-cabecalho__titulo">Seus imóveis</h2>
+          <p class="secao-cabecalho__subtitulo" data-resumo-casas>Carregando imóveis...</p>
+        </div>
+        <a class="botao botao--primario" href="casa.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Cadastrar Casa</span>
+        </a>
+      </div>
+
+      <div class="colunas-situacao">
+        <section class="coluna-situacao">
+          <header class="coluna-situacao__topo">
+            <h3>Alugadas</h3>
+            <span class="coluna-situacao__contador" data-contador="alugada">0</span>
+          </header>
+          <div class="coluna-situacao__lista" data-situacao="alugada"></div>
+        </section>
+
+        <section class="coluna-situacao">
+          <header class="coluna-situacao__topo">
+            <h3>Vagas</h3>
+            <span class="coluna-situacao__contador" data-contador="vaga">0</span>
+          </header>
+          <div class="coluna-situacao__lista" data-situacao="vaga"></div>
+        </section>
+
+        <section class="coluna-situacao">
+          <header class="coluna-situacao__topo">
+            <h3>Atrasadas</h3>
+            <span class="coluna-situacao__contador" data-contador="atrasada">0</span>
+          </header>
+          <div class="coluna-situacao__lista" data-situacao="atrasada"></div>
+        </section>
+      </div>
+    </section>
   </main>
   <script type="module" src="js/pages/painel.js"></script>
 </body>
