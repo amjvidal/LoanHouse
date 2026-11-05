@@ -5,6 +5,9 @@ import {
   calcularSituacao, vencimentoDaReferencia, diasDeAtraso,
   listarPendenciasCasa, temPendencia, ordenarCasasPorPrioridade,
 } from "../js/utils/situacao.js";
+import {
+  destinoSeguroPosLogin, traduzirErroAuth, validarCredenciaisLogin,
+} from "../js/utils/sessao.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -45,4 +48,24 @@ test("pendências da casa (aluguel, água, luz e IPTU) e ordenação por priorid
 
   const ordenadas = ordenarCasasPorPrioridade([casaVaga, casaEmDia, casaAluguel, casaAguaIptu]);
   assert.deepEqual(ordenadas.map((c) => c.codigo), ["BOA-205", "TAN-210", "SAO-123", "SAN-124"]);
+});
+
+test("validação de login e destino pós-autenticação", () => {
+  assert.throws(() => validarCredenciaisLogin("   ", "123456"), /Digite seu e-mail/);
+  assert.throws(() => validarCredenciaisLogin("marcos@email.com", ""), /Digite sua senha/);
+  assert.deepEqual(validarCredenciaisLogin("  marcos@email.com ", "123456"), {
+    email: "marcos@email.com",
+    senha: "123456",
+  });
+
+  assert.equal(traduzirErroAuth("auth/invalid-credential"), "E-mail ou senha incorretos.");
+  assert.equal(traduzirErroAuth("auth/invalid-email"), "Digite um e-mail válido.");
+  assert.equal(traduzirErroAuth("erro-desconhecido"), "Não foi possível entrar. Tente de novo.");
+
+  assert.equal(destinoSeguroPosLogin("casa.html?id=SAO-123"), "casa.html?id=SAO-123");
+  assert.equal(destinoSeguroPosLogin("calendario.html#relatorios"), "calendario.html#relatorios");
+  assert.equal(destinoSeguroPosLogin("index.html"), "painel.html");
+  assert.equal(destinoSeguroPosLogin("https://exemplo.com"), "painel.html");
+  assert.equal(destinoSeguroPosLogin("//exemplo.com/painel.html"), "painel.html");
+  assert.equal(destinoSeguroPosLogin(""), "painel.html");
 });
