@@ -36,3 +36,4 @@ export function destinoSeguroPosLogin(destino) {
   if (nomeArquivo === "index.html") return "painel.html";
   return valor;
 }
+

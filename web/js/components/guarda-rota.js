@@ -9,3 +9,4 @@ try {
 } catch {
   document.documentElement.dataset.aguardandoSessao = "true";
 }
+
