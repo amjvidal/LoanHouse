@@ -4,6 +4,9 @@ import {
 import { db } from "./firebase.js";
 import { gerarCodigoCasa, codigoDisponivel } from "../utils/codigo-casa.js";
 import { SITUACAO } from "../utils/situacao.js";
+import { validarCasa } from "../utils/validacao-casa.js";
+
+export { validarCasa };
 
 const casas = collection(db, "casas");
 
@@ -17,14 +20,6 @@ export async function buscarCasa(codigo) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-export function validarCasa(dados = {}) {
-  if (!String(dados.rua || "").trim()) throw new Error("Informe a rua do imóvel.");
-  if (!String(dados.numero || "").trim()) throw new Error("Informe o número do imóvel.");
-  if (!String(dados.bairro || "").trim()) throw new Error("Informe o bairro do imóvel.");
-  const cepNumeros = String(dados.cep || "").replace(/\D/g, "");
-  if (cepNumeros.length !== 8) throw new Error("Informe um CEP válido com 8 números.");
-}
-
 // O código da casa é o ID do documento (ex.: casas/BOA-123).
 export async function criarCasa(dados) {
   validarCasa(dados);
@@ -32,6 +27,8 @@ export async function criarCasa(dados) {
   const codigo = codigoDisponivel(gerarCodigoCasa(dados.bairro, dados.numero), existentes);
   await setDoc(doc(db, "casas", codigo), {
     situacao: SITUACAO.VAGA,
+    cidade: "Belo Jardim",
+    uf: "PE",
     contratoAtivoId: null,
     inquilinoAtualId: null,
     fotos: [],
@@ -50,5 +47,8 @@ export function atualizarCasa(codigo, dados) {
 }
 
 export function excluirCasa(codigo) {
+  if (!String(codigo ?? "").trim()) {
+    throw new Error("Código do imóvel inválido para exclusão.");
+  }
   return deleteDoc(doc(db, "casas", codigo));
 }

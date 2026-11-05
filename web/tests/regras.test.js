@@ -8,6 +8,7 @@ import {
 import {
   destinoSeguroPosLogin, traduzirErroAuth, validarCredenciaisLogin,
 } from "../js/utils/sessao.js";
+import { validarCasa } from "../js/utils/validacao-casa.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -68,4 +69,56 @@ test("validação de login e destino pós-autenticação", () => {
   assert.equal(destinoSeguroPosLogin("https://exemplo.com"), "painel.html");
   assert.equal(destinoSeguroPosLogin("//exemplo.com/painel.html"), "painel.html");
   assert.equal(destinoSeguroPosLogin(""), "painel.html");
+});
+
+test("validação completa dos campos da casa", () => {
+  const baseValida = {
+    cep: "55150-000",
+    bairro: "São José",
+    rua: "Rua Coronel Antônio Marinho",
+    numero: "120A",
+    cidade: "Belo Jardim",
+    uf: "PE",
+    situacao: "vaga",
+  };
+
+  // Valor do aluguel opcional (ausente, vazio ou zero são aceitos)
+  assert.doesNotThrow(() => validarCasa(baseValida));
+  assert.doesNotThrow(() => validarCasa({ ...baseValida, valorAluguel: "" }));
+  assert.doesNotThrow(() => validarCasa({ ...baseValida, valorAluguel: 0 }));
+  assert.doesNotThrow(() => validarCasa({ ...baseValida, valorAluguel: 1350.5 }));
+
+  // Campos inválidos apontam o nome do campo e mensagem clara
+  assert.throws(
+    () => validarCasa({ ...baseValida, cep: "55150" }),
+    (e) => e.campo === "cep" && /CEP válido/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, bairro: "123" }),
+    (e) => e.campo === "bairro" && /bairro válido/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, rua: "   " }),
+    (e) => e.campo === "rua" && /rua/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, numero: "---" }),
+    (e) => e.campo === "numero" && /número válido/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, valorAluguel: -100 }),
+    (e) => e.campo === "valorAluguel" && /negativo/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, cidade: "" }),
+    (e) => e.campo === "cidade" && /cidade/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, uf: "P" }),
+    (e) => e.campo === "uf" && /UF válida/.test(e.message)
+  );
+  assert.throws(
+    () => validarCasa({ ...baseValida, situacao: "indefinida" }),
+    (e) => e.campo === "situacao" && /situação válida/.test(e.message)
+  );
 });
