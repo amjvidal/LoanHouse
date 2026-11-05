@@ -1,6 +1,47 @@
-.topo { background: var(--cor-fundo); border-bottom: 1px solid var(--cor-borda); }
-.menu { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: var(--espaco); max-width: 1200px; margin: 0 auto; }
-.conteudo { max-width: 1200px; margin: 0 auto; padding: calc(var(--espaco) * 2) var(--espaco); }
+body:not(.pagina-login) {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  min-height: 100vh;
+  background: var(--cor-fundo);
+}
+
+.topo {
+  background: #edf4fb;
+  border-right: 1px solid #d5e2ef;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 14px;
+}
+
+.conteudo {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 36px 48px;
+}
+
 .grupo { margin-bottom: calc(var(--espaco) * 2); }
 .grade-casas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--espaco); }
 .pagina-login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--cor-fundo); }
+
+@media (max-width: 960px) {
+  body:not(.pagina-login) {
+    grid-template-columns: 1fr;
+  }
+  .topo {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #d5e2ef;
+  }
+  .conteudo {
+    padding: 20px 16px 36px;
+  }
+}
