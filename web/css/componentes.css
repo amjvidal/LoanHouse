@@ -331,7 +331,8 @@ input:focus, select:focus, textarea:focus {
   font-size: 15px;
 }
 
-.colunas-situacao {
+.colunas-situacao,
+.grade-casas-continua {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
@@ -429,6 +430,13 @@ input:focus, select:focus, textarea:focus {
   margin: 0 0 6px;
 }
 
+.cartao-casa__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
 .badge-pagamento {
   display: inline-flex;
   align-items: center;
@@ -438,7 +446,6 @@ input:focus, select:focus, textarea:focus {
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 10px;
 }
 .badge-pagamento--pago { background: #e8f5e9; color: #2e6b3e; }
 .badge-pagamento--pendente { background: #fdecea; color: #9c2b2b; }
@@ -472,7 +479,8 @@ input:focus, select:focus, textarea:focus {
 .vazio { color: var(--cor-texto-suave); font-size: 15px; margin: 8px 0; }
 
 @media (max-width: 960px) {
-  .colunas-situacao {
+  .colunas-situacao,
+  .grade-casas-continua {
     grid-template-columns: 1fr;
   }
 }
