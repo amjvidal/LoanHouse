@@ -105,11 +105,11 @@ export function normalizarDadosInquilino(dados = {}) {
 
   const conjuge = estadoCivil === ESTADO_CIVIL.CASADO
     ? {
-        nomeCompleto: String(conjugeBruto.nomeCompleto ?? "").trim(),
-        cpf: cpfConjuge ? formatarCpf(cpfConjuge) : "",
-        rg: String(conjugeBruto.rg ?? "").trim(),
-        telefone: telConjuge ? formatarTelefone(telConjuge) : "",
-      }
+      nomeCompleto: String(conjugeBruto.nomeCompleto ?? "").trim(),
+      cpf: cpfConjuge ? formatarCpf(cpfConjuge) : "",
+      rg: String(conjugeBruto.rg ?? "").trim(),
+      telefone: telConjuge ? formatarTelefone(telConjuge) : "",
+    }
     : null;
 
   return {
