@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inquilino · LoanHouse</title>
+  <title>Ficha do inquilino · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
@@ -14,8 +14,8 @@
   <main class="conteudo">
     <header class="painel-topo">
       <div>
-        <h1 class="painel-topo__titulo" data-titulo-pagina>Detalhes e edição do inquilino</h1>
-        <p class="painel-topo__subtitulo" data-subtitulo-pagina>Inquilinos • Dados pessoais, cônjuge e fiadores</p>
+        <h1 class="painel-topo__titulo" data-titulo-pagina>Ficha do inquilino</h1>
+        <p class="painel-topo__subtitulo" data-subtitulo-pagina>Inquilinos / Novo cadastro</p>
       </div>
       <div class="usuario-chip">
         <span class="usuario-chip__avatar" data-usuario-iniciais></span>
@@ -23,8 +23,187 @@
       </div>
     </header>
 
+    <section class="ficha-inquilino-cabecalho">
+      <div class="ficha-inquilino-cabecalho__info">
+        <span class="avatar-inquilino avatar-inquilino--grande" data-avatar-inquilino aria-hidden="true">IN</span>
+        <div class="ficha-inquilino-cabecalho__textos">
+          <h2 class="ficha-inquilino-cabecalho__nome" data-nome-topo>Novo inquilino</h2>
+          <p class="ficha-inquilino-cabecalho__vinculo" data-vinculo-topo>Preencha os dados pessoais abaixo</p>
+          <div data-badge-topo></div>
+        </div>
+      </div>
+
+      <div class="casa-cabecalho__acoes">
+        <button id="botao-editar-cadastro" class="botao botao--secundario botao--compacto botao--editar-ficha" type="button" hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <span>Editar cadastro</span>
+        </button>
+
+        <button id="botao-salvar" class="botao botao--primario botao--compacto" type="submit" form="form-inquilino">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          <span data-rotulo-salvar>Salvar</span>
+        </button>
+
+        <a id="botao-cancelar" class="botao botao--secundario botao--compacto" href="inquilinos.html">
+          <span>Cancelar</span>
+        </a>
+
+        <button id="botao-excluir" class="botao botao--perigo botao--compacto" type="button" hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+          <span>Deletar</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="ficha-inquilino-atalhos" data-atalhos-ficha hidden>
+      <div class="bloco-acao-ficha">
+        <a id="botao-whatsapp" class="botao botao--primario botao--acao-ficha" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          <span>Chamar no WhatsApp</span>
+        </a>
+        <p class="bloco-acao-ficha__legenda">Mensagem pré-escrita com nome, imóvel e aluguel.</p>
+      </div>
+
+      <div class="bloco-acao-ficha">
+        <button id="botao-serasa" class="botao botao--secundario botao--acao-ficha botao--serasa" type="button">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+          <span data-rotulo-serasa>Consultar Situação no Serasa</span>
+        </button>
+        <div class="serasa-status" data-serasa-info>
+          <span class="badge-situacao badge-situacao--alugada">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <polyline points="8.5 12.5 11 15 15.5 9.5"/>
+            </svg>
+            <span data-serasa-status>Sem restrições</span>
+          </span>
+          <span class="serasa-status__data" data-serasa-data>20/11/2026</span>
+        </div>
+      </div>
+    </section>
+
     <div class="pilha-secoes">
-      <div data-conteudo></div>
+      <div data-conteudo>
+        <form id="form-inquilino" novalidate>
+          <section class="cartao-secao">
+            <header class="cartao-secao__cabecalho">
+              <h2 class="cartao-secao__titulo">Dados pessoais</h2>
+            </header>
+
+            <div class="campo">
+              <label for="nomeCompleto">Nome Completo</label>
+              <input id="nomeCompleto" name="nomeCompleto" type="text" placeholder="Ex.: João Carlos da Silva" required>
+            </div>
+
+            <div class="grade-campos grade-campos--2col">
+              <div class="campo">
+                <label for="rg">RG</label>
+                <div class="campo-com-icone">
+                  <input id="rg" name="rg" type="text" placeholder="Ex.: 8.456.321-PE">
+                  <button type="button" class="campo-com-icone__botao" data-toggle-mascara="rg" aria-label="Mostrar ou ocultar RG">
+                    <svg data-icone-oculto viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                    <svg data-icone-visivel viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="campo">
+                <label for="cpf">CPF</label>
+                <div class="campo-com-icone">
+                  <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required>
+                  <button type="button" class="campo-com-icone__botao" data-toggle-mascara="cpf" aria-label="Mostrar ou ocultar CPF">
+                    <svg data-icone-oculto viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                    <svg data-icone-visivel viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grade-campos grade-campos--2col">
+              <div class="campo">
+                <label for="telefone">Telefone</label>
+                <input id="telefone" name="telefone" type="tel" inputmode="numeric" maxlength="15" placeholder="(81) 90000-0000" required>
+              </div>
+
+              <div class="campo">
+                <label for="estadoCivil">Estado Civil</label>
+                <select id="estadoCivil" name="estadoCivil">
+                  <option value="solteiro">Solteiro(a)</option>
+                  <option value="casado">Casado(a)</option>
+                  <option value="divorciado">Divorciado(a)</option>
+                  <option value="viuvo">Viúvo(a)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="secao-conjuge" data-secao-conjuge hidden>
+              <hr class="divisor-secao">
+              <header class="cartao-secao__cabecalho">
+                <h3 class="cartao-secao__titulo cartao-secao__titulo--sub">Dados do cônjuge</h3>
+                <p class="cartao-secao__subtitulo">Exibidos para inquilinos casados</p>
+              </header>
+
+              <div class="grade-campos grade-campos--2col">
+                <div class="campo">
+                  <label for="conjugeNome">Nome Completo do Cônjuge</label>
+                  <input id="conjugeNome" name="conjugeNome" type="text" placeholder="Digite o nome completo do cônjuge">
+                </div>
+                <div class="campo">
+                  <label for="conjugeTelefone">Telefone do Cônjuge (opcional)</label>
+                  <input id="conjugeTelefone" name="conjugeTelefone" type="tel" inputmode="numeric" maxlength="15" placeholder="(81) 90000-0000">
+                </div>
+              </div>
+
+              <div class="grade-campos grade-campos--2col">
+                <div class="campo">
+                  <label for="conjugeCpf">CPF do Cônjuge (opcional)</label>
+                  <input id="conjugeCpf" name="conjugeCpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00">
+                </div>
+                <div class="campo">
+                  <label for="conjugeRg">RG do Cônjuge (opcional)</label>
+                  <input id="conjugeRg" name="conjugeRg" type="text" placeholder="Ex.: 7.654.321-PE">
+                </div>
+              </div>
+            </div>
+
+            <p id="feedback-inquilino" class="mensagem-erro" role="alert" hidden></p>
+          </section>
+        </form>
+      </div>
+
       <div data-secao-fiadores></div>
     </div>
   </main>
