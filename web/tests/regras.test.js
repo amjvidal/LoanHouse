@@ -17,6 +17,13 @@ import {
   validarFiador,
   validarInquilino,
 } from "../js/utils/validacao-inquilino.js";
+import {
+  STATUS_CONTRATO,
+  dataIsoValida,
+  formatarDataBr,
+  normalizarDadosContrato,
+  validarContrato,
+} from "../js/utils/validacao-contrato.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -228,5 +235,87 @@ test("validação e normalização de fiadores", () => {
   assert.throws(
     () => validarFiador({ nomeCompleto: "Carlos", cpf: "32165498701", telefone: "81988887777", endereco: "   " }),
     (e) => e.campo === "endereco"
+  );
+});
+
+test("validação e normalização de contratos (vincular inquilino à casa)", () => {
+  assert.equal(dataIsoValida("2026-11-11"), true);
+  assert.equal(dataIsoValida("2026-02-30"), false);
+  assert.equal(dataIsoValida("11/11/2026"), false);
+  assert.equal(formatarDataBr("2026-11-11"), "11/11/2026");
+
+  const contrato = normalizarDadosContrato(
+    {
+      casaId: " sao-123 ",
+      inquilinoId: " inq-01 ",
+      valorAluguel: "1350.5",
+      diaVencimento: "10",
+    },
+    "2026-11-11"
+  );
+
+  assert.deepEqual(contrato, {
+    casaId: "SAO-123",
+    inquilinoId: "inq-01",
+    dataInicio: "2026-11-11",
+    dataFim: null,
+    valorAluguel: 1350.5,
+    diaVencimento: 10,
+    status: STATUS_CONTRATO.ATIVO,
+    comentarioFinal: "",
+    alugariaNovamente: null,
+    contratoUrl: null,
+  });
+
+  const comFim = normalizarDadosContrato(
+    {
+      casaId: "BOA-205-2",
+      inquilinoId: "inq-02",
+      valorAluguel: 1500,
+      diaVencimento: 5,
+      dataInicio: "2026-11-01",
+      dataFim: "2027-11-01",
+    },
+    "2026-11-11"
+  );
+  assert.equal(comFim.dataInicio, "2026-11-01");
+  assert.equal(comFim.dataFim, "2027-11-01");
+
+  assert.throws(
+    () => validarContrato({ casaId: "invalido", inquilinoId: "inq-1", valorAluguel: 1000, diaVencimento: 10 }),
+    (e) => e.campo === "casaId"
+  );
+  assert.throws(
+    () => validarContrato({ casaId: "SAO-123", inquilinoId: "   ", valorAluguel: 1000, diaVencimento: 10 }),
+    (e) => e.campo === "inquilinoId"
+  );
+  assert.throws(
+    () => validarContrato({ casaId: "SAO-123", inquilinoId: "inq-1", valorAluguel: 0, diaVencimento: 10 }),
+    (e) => e.campo === "valorAluguel"
+  );
+  assert.throws(
+    () => validarContrato({ casaId: "SAO-123", inquilinoId: "inq-1", valorAluguel: 1200, diaVencimento: 32 }),
+    (e) => e.campo === "diaVencimento"
+  );
+  assert.throws(
+    () => validarContrato({
+      casaId: "SAO-123",
+      inquilinoId: "inq-1",
+      valorAluguel: 1200,
+      diaVencimento: 10,
+      dataInicio: "2026-02-30",
+    }),
+    (e) => e.campo === "dataInicio"
+  );
+  assert.throws(
+    () => validarContrato({
+      casaId: "SAO-123",
+      inquilinoId: "inq-1",
+      valorAluguel: 1200,
+      diaVencimento: 10,
+      dataInicio: "2026-11-15",
+      dataFim: "2026-11-10",
+    }),
+    (e) => e.campo === "dataFim" && /anterior/.test(e.message)
   );
 });

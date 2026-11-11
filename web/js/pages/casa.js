@@ -9,6 +9,7 @@ import { gerarCodigoCasa } from "../utils/codigo-casa.js";
 import { temPendencia } from "../utils/situacao.js";
 import { preencherCabecalhoUsuario } from "../components/cartao-casa.js";
 import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
+import { montarSecaoContrato } from "../components/secao-contrato.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -356,6 +357,7 @@ exigirLogin(async (usuario) => {
     form.situacao.value = "vaga";
     sincronizarBotoesToggle();
     atualizarCabecalhoCasa();
+    await montarSecaoContrato("[data-secao-contrato]");
     return;
   }
 
@@ -380,7 +382,7 @@ exigirLogin(async (usuario) => {
   form.uf.value = casa.uf || "PE";
   form.valorAluguel.value = casa.valorAluguel ?? casa.valor ?? "";
   form.situacao.value = casa.situacao || "vaga";
-  form.inquilinoNome.value = casa.inquilinoNome || (casa.situacao === "alugada" ? "João Carlos da Silva" : "");
+  form.inquilinoNome.value = casa.inquilinoNome || "";
 
   estadoContas.aluguelPago = !(casa.situacao === "atrasada" || casa.aluguelAtrasado === true);
   estadoContas.iptuPago = casa.iptuPago !== false;
@@ -390,4 +392,21 @@ exigirLogin(async (usuario) => {
   sincronizarBotoesToggle();
   atualizarDestaqueNumero();
   atualizarCabecalhoCasa();
+
+  await montarSecaoContrato("[data-secao-contrato]", {
+    codigoCasa: codigoUrl,
+    casa,
+    aoAtualizar: async () => {
+      const atualizada = await buscarCasa(codigoUrl);
+      if (!atualizada) return;
+      form.situacao.value = atualizada.situacao || "alugada";
+      form.inquilinoNome.value = atualizada.inquilinoNome || "";
+      if (atualizada.valorAluguel !== undefined) {
+        form.valorAluguel.value = atualizada.valorAluguel;
+      }
+      estadoContas.aluguelPago = !(atualizada.situacao === "atrasada" || atualizada.aluguelAtrasado === true);
+      sincronizarBotoesToggle();
+      atualizarCabecalhoCasa();
+    },
+  });
 });
