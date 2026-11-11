@@ -9,6 +9,12 @@ import {
   destinoSeguroPosLogin, traduzirErroAuth, validarCredenciaisLogin,
 } from "../js/utils/sessao.js";
 import { validarCasa } from "../js/utils/validacao-casa.js";
+import {
+  formatarCpf,
+  formatarTelefone,
+  normalizarDadosInquilino,
+  validarInquilino,
+} from "../js/utils/validacao-inquilino.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -120,5 +126,70 @@ test("validação completa dos campos da casa", () => {
   assert.throws(
     () => validarCasa({ ...baseValida, situacao: "indefinida" }),
     (e) => e.campo === "situacao" && /situação válida/.test(e.message)
+  );
+});
+
+test("validação e normalização de inquilino e cônjuge", () => {
+  assert.equal(formatarCpf("12345678901"), "123.456.789-01");
+  assert.equal(formatarTelefone("81998765432"), "(81) 99876-5432");
+  assert.equal(formatarTelefone("8137261234"), "(81) 3726-1234");
+
+  // Solteiro: ignora dados residuais de cônjuge e define conjuge = null
+  const solteiro = normalizarDadosInquilino({
+    nomeCompleto: "  João Carlos da Silva ",
+    cpf: "12345678901",
+    telefone: "81998765432",
+    estadoCivil: "solteiro",
+    conjuge: { nomeCompleto: "Maria" },
+  });
+  assert.equal(solteiro.nomeCompleto, "João Carlos da Silva");
+  assert.equal(solteiro.cpf, "123.456.789-01");
+  assert.equal(solteiro.rg, "");
+  assert.equal(solteiro.telefone, "(81) 99876-5432");
+  assert.equal(solteiro.conjuge, null);
+  assert.equal(solteiro.alugariaNovamente, true);
+
+  // Casado: exige nome do cônjuge e formata CPF/telefone do cônjuge quando informados
+  const casado = normalizarDadosInquilino({
+    nomeCompleto: "João Carlos da Silva",
+    cpf: "123.456.789-01",
+    rg: "8.123.456 SDS/PE",
+    telefone: "(81) 99876-5432",
+    estadoCivil: "casado",
+    conjuge: {
+      nomeCompleto: " Maria Aparecida da Silva ",
+      cpf: "98765432100",
+      telefone: "81991112222",
+    },
+  });
+  assert.deepEqual(casado.conjuge, {
+    nomeCompleto: "Maria Aparecida da Silva",
+    cpf: "987.654.321-00",
+    rg: "",
+    telefone: "(81) 99111-2222",
+  });
+
+  // Erros de validação apontam o campo correspondente
+  assert.throws(
+    () => validarInquilino({ nomeCompleto: "", cpf: "12345678901", telefone: "81998765432" }),
+    (e) => e.campo === "nomeCompleto"
+  );
+  assert.throws(
+    () => validarInquilino({ nomeCompleto: "João", cpf: "111.111.111-11", telefone: "81998765432" }),
+    (e) => e.campo === "cpf"
+  );
+  assert.throws(
+    () => validarInquilino({ nomeCompleto: "João", cpf: "12345678901", telefone: "98765432" }),
+    (e) => e.campo === "telefone"
+  );
+  assert.throws(
+    () => validarInquilino({
+      nomeCompleto: "João",
+      cpf: "12345678901",
+      telefone: "81998765432",
+      estadoCivil: "casado",
+      conjuge: { nomeCompleto: "   " },
+    }),
+    (e) => e.campo === "conjuge.nomeCompleto"
   );
 });
