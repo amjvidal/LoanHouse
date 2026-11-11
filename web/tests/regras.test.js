@@ -12,7 +12,9 @@ import { validarCasa } from "../js/utils/validacao-casa.js";
 import {
   formatarCpf,
   formatarTelefone,
+  normalizarDadosFiador,
   normalizarDadosInquilino,
+  validarFiador,
   validarInquilino,
 } from "../js/utils/validacao-inquilino.js";
 
@@ -191,5 +193,40 @@ test("validação e normalização de inquilino e cônjuge", () => {
       conjuge: { nomeCompleto: "   " },
     }),
     (e) => e.campo === "conjuge.nomeCompleto"
+  );
+});
+
+test("validação e normalização de fiadores", () => {
+  const fiador = normalizarDadosFiador({
+    nomeCompleto: "  Carlos Eduardo Mendes ",
+    cpf: "32165498701",
+    rg: " 5.432.100 SDS/PE ",
+    telefone: "81988887777",
+    endereco: " Rua São José, 45, Centro - Belo Jardim/PE ",
+  });
+
+  assert.deepEqual(fiador, {
+    nomeCompleto: "Carlos Eduardo Mendes",
+    cpf: "321.654.987-01",
+    rg: "5.432.100 SDS/PE",
+    telefone: "(81) 98888-7777",
+    endereco: "Rua São José, 45, Centro - Belo Jardim/PE",
+  });
+
+  assert.throws(
+    () => validarFiador({ nomeCompleto: "", cpf: "32165498701", telefone: "81988887777", endereco: "Rua A, 10" }),
+    (e) => e.campo === "nomeCompleto"
+  );
+  assert.throws(
+    () => validarFiador({ nomeCompleto: "Carlos", cpf: "123", telefone: "81988887777", endereco: "Rua A, 10" }),
+    (e) => e.campo === "cpf"
+  );
+  assert.throws(
+    () => validarFiador({ nomeCompleto: "Carlos", cpf: "32165498701", telefone: "12345", endereco: "Rua A, 10" }),
+    (e) => e.campo === "telefone"
+  );
+  assert.throws(
+    () => validarFiador({ nomeCompleto: "Carlos", cpf: "32165498701", telefone: "81988887777", endereco: "   " }),
+    (e) => e.campo === "endereco"
   );
 });
