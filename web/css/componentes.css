@@ -859,6 +859,44 @@ input:focus, select:focus, textarea:focus {
   gap: 10px;
 }
 
+/* Cartão de resumo do Contrato Ativo */
+.cartao-contrato {
+  background: #f8fafc;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: grid;
+  gap: 16px;
+}
+.cartao-contrato__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.cartao-contrato__grade {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.cartao-contrato__item {
+  display: grid;
+  gap: 4px;
+}
+.cartao-contrato__rotulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+}
+.cartao-contrato__valor {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
   .grade-casas-continua,
@@ -866,7 +904,8 @@ input:focus, select:focus, textarea:focus {
   .grade-campos--2col,
   .grade-campos--aluguel-inquilino,
   .grade-campos--4col,
-  .grade-campos--3col {
+  .grade-campos--3col,
+  .cartao-contrato__grade {
     grid-template-columns: 1fr;
   }
 }

@@ -64,120 +64,124 @@
       </div>
     </section>
 
-    <form id="form-casa" class="pilha-secoes" novalidate>
-      <section class="cartao-secao">
-        <header class="cartao-secao__cabecalho">
-          <h2 class="cartao-secao__titulo">Dados do imóvel</h2>
-          <p class="cartao-secao__subtitulo">Digite o CEP primeiro para buscar o endereço e liberar o número</p>
-        </header>
+    <div class="pilha-secoes">
+      <form id="form-casa" novalidate>
+        <section class="cartao-secao">
+          <header class="cartao-secao__cabecalho">
+            <h2 class="cartao-secao__titulo">Dados do imóvel</h2>
+            <p class="cartao-secao__subtitulo">Digite o CEP primeiro para buscar o endereço e liberar o número</p>
+          </header>
 
-        <div class="grade-campos grade-campos--2col">
-          <div class="campo">
-            <label for="cep">CEP <span class="campo__dica" data-status-cep></span></label>
-            <input id="cep" name="cep" type="text" inputmode="numeric" maxlength="9" placeholder="Digite o CEP (ex.: 55020-010)" required>
+          <div class="grade-campos grade-campos--2col">
+            <div class="campo">
+              <label for="cep">CEP <span class="campo__dica" data-status-cep></span></label>
+              <input id="cep" name="cep" type="text" inputmode="numeric" maxlength="9" placeholder="Digite o CEP (ex.: 55020-010)" required>
+            </div>
+            <div class="campo">
+              <label for="bairro">Bairro</label>
+              <input id="bairro" name="bairro" type="text" placeholder="Preenchido pelo CEP" disabled required>
+            </div>
           </div>
-          <div class="campo">
-            <label for="bairro">Bairro</label>
-            <input id="bairro" name="bairro" type="text" placeholder="Preenchido pelo CEP" disabled required>
-          </div>
-        </div>
 
-        <div class="grade-campos grade-campos--rua-numero">
-          <div class="campo">
-            <label for="rua">Rua</label>
-            <input id="rua" name="rua" type="text" placeholder="Preenchida pelo CEP" disabled required>
+          <div class="grade-campos grade-campos--rua-numero">
+            <div class="campo">
+              <label for="rua">Rua</label>
+              <input id="rua" name="rua" type="text" placeholder="Preenchida pelo CEP" disabled required>
+            </div>
+            <div class="campo">
+              <label for="numero">Número <span class="campo__alerta" data-alerta-numero hidden>• Obrigatório</span></label>
+              <input id="numero" name="numero" type="text" placeholder="Ex.: 123" disabled required>
+            </div>
           </div>
-          <div class="campo">
-            <label for="numero">Número <span class="campo__alerta" data-alerta-numero hidden>• Obrigatório</span></label>
-            <input id="numero" name="numero" type="text" placeholder="Ex.: 123" disabled required>
-          </div>
-        </div>
 
-        <div class="grade-campos grade-campos--aluguel-inquilino">
-          <div class="campo">
-            <label>Aluguel</label>
-            <div class="grupo-opcoes" role="group" aria-label="Situação do aluguel">
-              <button type="button" class="opcao-status opcao-status--pago" data-toggle-aluguel="pago">
+          <div class="grade-campos grade-campos--aluguel-inquilino">
+            <div class="campo">
+              <label>Aluguel</label>
+              <div class="grupo-opcoes" role="group" aria-label="Situação do aluguel">
+                <button type="button" class="opcao-status opcao-status--pago" data-toggle-aluguel="pago">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/>
+                    <polyline points="8.5 12.5 11 15 15.5 9.5"/>
+                  </svg>
+                  <span>Aluguel Pago</span>
+                </button>
+                <button type="button" class="opcao-status opcao-status--pendente" data-toggle-aluguel="pendente">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/>
+                    <line x1="12" y1="8" x2="12" y2="12.5"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>Aluguel Pendente</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="campo">
+              <label for="inquilinoNome">Inquilino atual</label>
+              <div class="campo-inquilino">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9"/>
-                  <polyline points="8.5 12.5 11 15 15.5 9.5"/>
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/>
                 </svg>
-                <span>Aluguel Pago</span>
-              </button>
-              <button type="button" class="opcao-status opcao-status--pendente" data-toggle-aluguel="pendente">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9"/>
-                  <line x1="12" y1="8" x2="12" y2="12.5"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span>Aluguel Pendente</span>
-              </button>
+                <input id="inquilinoNome" name="inquilinoNome" type="text" placeholder="Sem inquilino vinculado">
+              </div>
             </div>
           </div>
 
-          <div class="campo">
-            <label for="inquilinoNome">Inquilino atual</label>
-            <div class="campo-inquilino">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="8" r="4"/>
-                <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/>
-              </svg>
-              <input id="inquilinoNome" name="inquilinoNome" type="text" placeholder="Sem inquilino vinculado">
+          <hr class="divisor-secao">
+
+          <div class="grade-campos grade-campos--4col">
+            <div class="campo">
+              <label for="valorAluguel">Valor do Aluguel (R$)</label>
+              <input id="valorAluguel" name="valorAluguel" type="number" step="0.01" min="0" placeholder="1500.00">
+            </div>
+            <div class="campo">
+              <label for="situacao">Situação da Casa</label>
+              <select id="situacao" name="situacao">
+                <option value="alugada">Alugada</option>
+                <option value="vaga">Vaga</option>
+                <option value="atrasada">Atrasada</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="cidade">Cidade</label>
+              <input id="cidade" name="cidade" type="text" value="Belo Jardim">
+            </div>
+            <div class="campo">
+              <label for="uf">UF</label>
+              <input id="uf" name="uf" type="text" maxlength="2" value="PE">
             </div>
           </div>
-        </div>
 
-        <hr class="divisor-secao">
-
-        <div class="grade-campos grade-campos--4col">
-          <div class="campo">
-            <label for="valorAluguel">Valor do Aluguel (R$)</label>
-            <input id="valorAluguel" name="valorAluguel" type="number" step="0.01" min="0" placeholder="1500.00">
-          </div>
-          <div class="campo">
-            <label for="situacao">Situação da Casa</label>
-            <select id="situacao" name="situacao">
-              <option value="alugada">Alugada</option>
-              <option value="vaga">Vaga</option>
-              <option value="atrasada">Atrasada</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="cidade">Cidade</label>
-            <input id="cidade" name="cidade" type="text" value="Belo Jardim">
-          </div>
-          <div class="campo">
-            <label for="uf">UF</label>
-            <input id="uf" name="uf" type="text" maxlength="2" value="PE">
-          </div>
-        </div>
-
-        <div class="grade-campos grade-campos--3col">
-          <div class="campo">
-            <label>IPTU do Ano</label>
-            <div class="grupo-opcoes">
-              <button type="button" class="opcao-status opcao-status--pago" data-toggle-conta="iptu" data-valor="pago">IPTU em Dia</button>
-              <button type="button" class="opcao-status opcao-status--pendente" data-toggle-conta="iptu" data-valor="pendente">IPTU Pendente</button>
+          <div class="grade-campos grade-campos--3col">
+            <div class="campo">
+              <label>IPTU do Ano</label>
+              <div class="grupo-opcoes">
+                <button type="button" class="opcao-status opcao-status--pago" data-toggle-conta="iptu" data-valor="pago">IPTU em Dia</button>
+                <button type="button" class="opcao-status opcao-status--pendente" data-toggle-conta="iptu" data-valor="pendente">IPTU Pendente</button>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Água (Compesa)</label>
+              <div class="grupo-opcoes">
+                <button type="button" class="opcao-status opcao-status--pago" data-toggle-conta="agua" data-valor="pago">Água em Dia</button>
+                <button type="button" class="opcao-status opcao-status--pendente" data-toggle-conta="agua" data-valor="pendente">Água Pendente</button>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Luz (Celpe)</label>
+              <div class="grupo-opcoes">
+                <button type="button" class="opcao-status opcao-status--pago" data-toggle-conta="luz" data-valor="pago">Luz em Dia</button>
+                <button type="button" class="opcao-status opcao-status--pendente" data-toggle-conta="luz" data-valor="pendente">Luz Pendente</button>
+              </div>
             </div>
           </div>
-          <div class="campo">
-            <label>Água (Compesa)</label>
-            <div class="grupo-opcoes">
-              <button type="button" class="opcao-status opcao-status--pago" data-toggle-conta="agua" data-valor="pago">Água em Dia</button>
-              <button type="button" class="opcao-status opcao-status--pendente" data-toggle-conta="agua" data-valor="pendente">Água Pendente</button>
-            </div>
-          </div>
-          <div class="campo">
-            <label>Luz (Celpe)</label>
-            <div class="grupo-opcoes">
-              <button type="button" class="opcao-status opcao-status--pago" data-toggle-conta="luz" data-valor="pago">Luz em Dia</button>
-              <button type="button" class="opcao-status opcao-status--pendente" data-toggle-conta="luz" data-valor="pendente">Luz Pendente</button>
-            </div>
-          </div>
-        </div>
 
-        <p id="feedback-casa" class="mensagem-erro" role="alert" hidden></p>
-      </section>
+          <p id="feedback-casa" class="mensagem-erro" role="alert" hidden></p>
+        </section>
+      </form>
+
+      <div data-secao-contrato></div>
 
       <section class="cartao-secao">
         <header class="cartao-secao__cabecalho">
@@ -188,7 +192,7 @@
           <p class="vazio">Nenhum arquivo anexado a este imóvel ainda.</p>
         </div>
       </section>
-    </form>
+    </div>
   </main>
   <script type="module" src="js/pages/casa.js"></script>
 </body>
