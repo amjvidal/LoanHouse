@@ -925,6 +925,128 @@ input:focus, select:focus, textarea:focus {
   color: #475569;
 }
 
+/* Ficha do Inquilino (#51, #53) */
+.ficha-inquilino-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.ficha-inquilino-cabecalho__info {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.avatar-inquilino--grande {
+  width: 68px;
+  height: 68px;
+  font-size: 23px;
+}
+.ficha-inquilino-cabecalho__textos {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+.ficha-inquilino-cabecalho__nome {
+  margin: 0;
+  font-family: "Outfit", "Inter", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+.ficha-inquilino-cabecalho__vinculo {
+  margin: 0 0 2px;
+  font-size: 15px;
+  color: var(--cor-texto-suave);
+}
+.botao--editar-ficha {
+  color: var(--cor-primaria);
+  border-color: #dbe2ea;
+  background: #ffffff;
+}
+.botao--editar-ficha:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.ficha-inquilino-atalhos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.bloco-acao-ficha {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.botao--acao-ficha {
+  width: 100%;
+  min-height: 54px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+.botao--serasa {
+  color: var(--cor-primaria);
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+}
+.botao--serasa:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.bloco-acao-ficha__legenda {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cor-texto-suave);
+}
+.serasa-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.serasa-status__data {
+  font-size: 14px;
+  color: var(--cor-texto-suave);
+}
+
+.campo-com-icone {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.campo-com-icone input {
+  padding-right: 46px;
+}
+.campo-com-icone__botao {
+  position: absolute;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cor-primaria);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.campo-com-icone__botao:hover {
+  background: #eef4fa;
+}
+
+.secao-conjuge {
+  display: grid;
+  gap: 16px;
+}
+.cartao-secao__titulo--sub {
+  font-size: 18px;
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
   .grade-casas-continua,
@@ -933,7 +1055,8 @@ input:focus, select:focus, textarea:focus {
   .grade-campos--aluguel-inquilino,
   .grade-campos--4col,
   .grade-campos--3col,
-  .cartao-contrato__grade {
+  .cartao-contrato__grade,
+  .ficha-inquilino-atalhos {
     grid-template-columns: 1fr;
   }
 }
