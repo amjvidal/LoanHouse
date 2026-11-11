@@ -320,3 +320,4 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
 
   await carregarEstadoContrato();
 }
+

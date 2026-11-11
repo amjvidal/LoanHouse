@@ -103,3 +103,4 @@ export function validarContrato(dados = {}, hoje = hojeISO()) {
   normalizarDadosContrato(dados, hoje);
   return true;
 }
+
