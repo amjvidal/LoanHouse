@@ -11,7 +11,7 @@ const ICONES = {
 };
 
 const ITENS = [
-  { id: "painel", rotulo: "Dashboard", href: "painel.html" },
+  { id: "painel", rotulo: "Pendências", href: "painel.html" },
   { id: "casas", rotulo: "Casas", href: "casas.html" },
   { id: "inquilinos", rotulo: "Inquilinos", href: "inquilinos.html" },
   { id: "calendario", rotulo: "Calendário", href: "calendario.html" },
