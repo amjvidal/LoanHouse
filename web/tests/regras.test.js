@@ -12,6 +12,8 @@ import { validarCasa } from "../js/utils/validacao-casa.js";
 import {
   formatarCpf,
   formatarTelefone,
+  mascararCpf,
+  mascararRg,
   normalizarDadosFiador,
   normalizarDadosInquilino,
   validarFiador,
@@ -142,6 +144,8 @@ test("validação e normalização de inquilino e cônjuge", () => {
   assert.equal(formatarCpf("12345678901"), "123.456.789-01");
   assert.equal(formatarTelefone("81998765432"), "(81) 99876-5432");
   assert.equal(formatarTelefone("8137261234"), "(81) 3726-1234");
+  assert.equal(mascararCpf("123.456.789-09"), "•••.•••.•••-09");
+  assert.equal(mascararRg("8.456.321-PE"), "••.•••.321-PE");
 
   // Solteiro: ignora dados residuais de cônjuge e define conjuge = null
   const solteiro = normalizarDadosInquilino({

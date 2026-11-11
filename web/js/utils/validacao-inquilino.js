@@ -29,6 +29,24 @@ export function formatarCpf(valor) {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9, 11)}`;
 }
 
+export function mascararCpf(valor) {
+  const d = apenasDigitos(valor);
+  if (d.length < 2) return "•••.•••.•••-••";
+  return `•••.•••.•••-${d.slice(-2)}`;
+}
+
+export function mascararRg(valor) {
+  const texto = String(valor ?? "").trim();
+  if (!texto) return "Não informado";
+  const d = apenasDigitos(texto);
+  const ufMatch = texto.match(/[A-Za-z]{2}$/);
+  const sufixoUf = ufMatch ? `-${ufMatch[0].toUpperCase()}` : "";
+  if (d.length >= 3) {
+    return `••.•••.${d.slice(-3)}${sufixoUf}`;
+  }
+  return "••.•••.•••";
+}
+
 export function formatarTelefone(valor) {
   let d = apenasDigitos(valor);
   if (d.length > 11 && d.startsWith("55")) {

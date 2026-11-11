@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inquilinos · Gerenciador Imobiliário</title>
+  <title>Inquilinos · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
@@ -12,8 +12,34 @@
 <body>
   <header class="topo"><nav class="menu" data-menu></nav></header>
   <main class="conteudo">
-    <h1>Inquilinos</h1>
-    <div data-conteudo></div>
+    <header class="painel-topo">
+      <div>
+        <h1 class="painel-topo__titulo">Inquilinos</h1>
+        <p class="painel-topo__subtitulo" data-mes-atual data-prefixo="Cadastro e situação dos locatários">Cadastro e situação dos locatários • Novembro de 2026</p>
+      </div>
+      <div class="usuario-chip">
+        <span class="usuario-chip__avatar" data-usuario-iniciais></span>
+        <span class="usuario-chip__nome" data-usuario-nome></span>
+      </div>
+    </header>
+
+    <section class="secao-imoveis">
+      <div class="secao-cabecalho">
+        <div>
+          <h2 class="secao-cabecalho__titulo">Todos os inquilinos</h2>
+          <p class="secao-cabecalho__subtitulo" data-resumo-inquilinos>Carregando inquilinos...</p>
+        </div>
+        <a class="botao botao--primario" href="inquilino.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Cadastrar Inquilino</span>
+        </a>
+      </div>
+
+      <div class="grade-casas-continua" data-conteudo></div>
+    </section>
   </main>
   <script type="module" src="js/pages/inquilinos.js"></script>
 </body>
