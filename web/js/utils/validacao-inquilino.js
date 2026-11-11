@@ -1,4 +1,4 @@
-// Regras puras de validação, formatação e normalização de inquilinos e cônjuge.
+// Regras puras de validação, formatação e normalização de inquilinos, cônjuge e fiadores.
 
 export const ESTADO_CIVIL = {
   SOLTEIRO: "solteiro",
@@ -122,5 +122,37 @@ export function normalizarDadosInquilino(dados = {}) {
     conjuge,
     alugariaNovamente: dados.alugariaNovamente !== false,
     documentos: Array.isArray(dados.documentos) ? dados.documentos : [],
+  };
+}
+
+export function validarFiador(dados = {}) {
+  const nomeCompleto = String(dados.nomeCompleto ?? "").trim();
+  if (!nomeCompleto) {
+    throw erroValidacao("nomeCompleto", "Informe o nome completo do fiador.");
+  }
+
+  if (!cpfTemFormatoValido(dados.cpf)) {
+    throw erroValidacao("cpf", "Informe um CPF válido com 11 números para o fiador.");
+  }
+
+  if (!telefoneTemFormatoValido(dados.telefone)) {
+    throw erroValidacao("telefone", "Informe um telefone válido com DDD para o fiador.");
+  }
+
+  const endereco = String(dados.endereco ?? "").trim();
+  if (!endereco) {
+    throw erroValidacao("endereco", "Informe o endereço completo do fiador.");
+  }
+}
+
+export function normalizarDadosFiador(dados = {}) {
+  validarFiador(dados);
+
+  return {
+    nomeCompleto: String(dados.nomeCompleto).trim(),
+    cpf: formatarCpf(dados.cpf),
+    rg: String(dados.rg ?? "").trim(),
+    telefone: formatarTelefone(dados.telefone),
+    endereco: String(dados.endereco).trim(),
   };
 }

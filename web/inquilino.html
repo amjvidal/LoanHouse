@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inquilino · Gerenciador Imobiliário</title>
+  <title>Inquilino · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
@@ -12,8 +12,21 @@
 <body>
   <header class="topo"><nav class="menu" data-menu></nav></header>
   <main class="conteudo">
-    <h1>Inquilino</h1>
-    <div data-conteudo></div>
+    <header class="painel-topo">
+      <div>
+        <h1 class="painel-topo__titulo" data-titulo-pagina>Detalhes e edição do inquilino</h1>
+        <p class="painel-topo__subtitulo" data-subtitulo-pagina>Inquilinos • Dados pessoais, cônjuge e fiadores</p>
+      </div>
+      <div class="usuario-chip">
+        <span class="usuario-chip__avatar" data-usuario-iniciais></span>
+        <span class="usuario-chip__nome" data-usuario-nome></span>
+      </div>
+    </header>
+
+    <div class="pilha-secoes">
+      <div data-conteudo></div>
+      <div data-secao-fiadores></div>
+    </div>
   </main>
   <script type="module" src="js/pages/inquilino.js"></script>
 </body>
