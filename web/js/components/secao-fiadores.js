@@ -279,3 +279,4 @@ export async function montarSecaoFiadores(alvo, inquilinoId) {
 
   await recarregarFiadores();
 }
+
