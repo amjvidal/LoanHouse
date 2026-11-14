@@ -26,11 +26,22 @@ export function preencherCabecalhoUsuario(usuario) {
     elMes.textContent = `${prefixo} • ${MESES[agora.getMonth()]} de ${agora.getFullYear()}`;
   }
 
-  const nomeDireto = usuario?.displayName || usuario?.email?.split("@")[0] || "";
+  const nomeDireto = usuario?.perfil?.nome || usuario?.nome || usuario?.displayName || "";
   if (nomeDireto) {
-    localStorage.setItem("loanhouse_usuario_nome", nomeDireto);
+    try {
+      localStorage.setItem("loanhouse_usuario_nome", nomeDireto);
+    } catch {
+      // Ignora bloqueio de armazenamento local.
+    }
   }
-  const nomeUsuario = nomeDireto || localStorage.getItem("loanhouse_usuario_nome") || "";
+  let nomeCache = "";
+  try {
+    nomeCache = localStorage.getItem("loanhouse_usuario_nome") || "";
+  } catch {
+    nomeCache = "";
+  }
+  const nomeFallback = usuario?.email?.split("@")[0] || "";
+  const nomeUsuario = nomeDireto || nomeCache || nomeFallback;
   const elNome = document.querySelector("[data-usuario-nome]");
   const elIniciais = document.querySelector("[data-usuario-iniciais]");
   if (elNome) elNome.textContent = nomeUsuario;

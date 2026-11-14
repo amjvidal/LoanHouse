@@ -1,6 +1,9 @@
-import { entrar, obterDestinoPosLogin, redirecionarSeLogado } from "../services/auth.js";
-
-redirecionarSeLogado();
+import {
+  entrar,
+  obterAvisoLogin,
+  obterDestinoPosLogin,
+  redirecionarSeLogado,
+} from "../services/auth.js";
 
 const form = document.querySelector("#form-login");
 const erro = document.querySelector("#erro-login");
@@ -8,6 +11,19 @@ const inputSenha = document.querySelector("#senha");
 const botaoSenha = document.querySelector("#alternar-senha");
 const iconeOlhoFechado = document.querySelector("#icone-olho-fechado");
 const iconeOlhoAberto = document.querySelector("#icone-olho-aberto");
+
+function exibirErro(mensagem) {
+  if (!erro || !mensagem) return;
+  erro.textContent = mensagem;
+  erro.hidden = false;
+}
+
+const avisoSessao = obterAvisoLogin();
+if (avisoSessao) {
+  exibirErro(avisoSessao);
+}
+
+redirecionarSeLogado(exibirErro);
 
 if (botaoSenha && inputSenha) {
   botaoSenha.addEventListener("click", () => {
@@ -29,8 +45,7 @@ form.addEventListener("submit", async (evento) => {
     await entrar(form.email.value, form.senha.value);
     location.replace(obterDestinoPosLogin());
   } catch (e) {
-    erro.textContent = e.message;
-    erro.hidden = false;
+    exibirErro(e.message);
   } finally {
     botao.disabled = false;
   }

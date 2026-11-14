@@ -6,7 +6,7 @@ import {
   listarPendenciasCasa, temPendencia, ordenarCasasPorPrioridade,
 } from "../js/utils/situacao.js";
 import {
-  destinoSeguroPosLogin, traduzirErroAuth, validarCredenciaisLogin,
+  destinoSeguroPosLogin, normalizarPerfilUsuario, traduzirErroAuth, validarCredenciaisLogin,
 } from "../js/utils/sessao.js";
 import { validarCasa } from "../js/utils/validacao-casa.js";
 import {
@@ -80,7 +80,37 @@ test("validação de login e destino pós-autenticação", () => {
 
   assert.equal(traduzirErroAuth("auth/invalid-credential"), "E-mail ou senha incorretos.");
   assert.equal(traduzirErroAuth("auth/invalid-email"), "Digite um e-mail válido.");
+  assert.equal(
+    traduzirErroAuth("auth/usuario-nao-autorizado"),
+    "Sua conta não tem permissão para acessar o sistema."
+  );
   assert.equal(traduzirErroAuth("erro-desconhecido"), "Não foi possível entrar. Tente de novo.");
+
+  assert.equal(normalizarPerfilUsuario({ uid: "u1" }, null), null);
+  assert.deepEqual(
+    normalizarPerfilUsuario(
+      { uid: "u1", email: "marcos@loanhouse.com" },
+      { nome: "  Marcos Cavalcanti ", email: "marcos@loanhouse.com", papel: "dono" }
+    ),
+    {
+      uid: "u1",
+      nome: "Marcos Cavalcanti",
+      email: "marcos@loanhouse.com",
+      papel: "dono",
+    }
+  );
+  assert.deepEqual(
+    normalizarPerfilUsuario(
+      { uid: "u2", email: "mario@loanhouse.com" },
+      { nome: "", papel: "outro" }
+    ),
+    {
+      uid: "u2",
+      nome: "mario",
+      email: "mario@loanhouse.com",
+      papel: "admin",
+    }
+  );
 
   assert.equal(destinoSeguroPosLogin("casa.html?id=SAO-123"), "casa.html?id=SAO-123");
   assert.equal(destinoSeguroPosLogin("calendario.html#relatorios"), "calendario.html#relatorios");
