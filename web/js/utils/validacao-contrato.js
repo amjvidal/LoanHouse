@@ -104,3 +104,49 @@ export function validarContrato(dados = {}, hoje = hojeISO()) {
   return true;
 }
 
+function interpretarAlugariaNovamente(valor) {
+  if (typeof valor === "boolean") return valor;
+  const texto = String(valor ?? "").trim().toLowerCase();
+  if (texto === "sim" || texto === "true") return true;
+  if (texto === "nao" || texto === "não" || texto === "false") return false;
+  return null;
+}
+
+export function normalizarEncerramentoContrato(dados = {}, { dataInicio = null, hoje = hojeISO() } = {}) {
+  if (!dados || typeof dados !== "object") {
+    throw erro("dataFim", "Dados de encerramento do contrato inválidos.");
+  }
+
+  const dataFimBruta = String(dados.dataFim ?? "").trim();
+  const dataFim = dataFimBruta || hoje;
+  if (!dataIsoValida(dataFim)) {
+    throw erro("dataFim", "Informe uma data de encerramento válida (AAAA-MM-DD).");
+  }
+
+  const inicioLimpo = String(dataInicio ?? "").trim();
+  if (inicioLimpo && dataIsoValida(inicioLimpo) && dataFim < inicioLimpo) {
+    throw erro("dataFim", "A data de encerramento não pode ser anterior à data de início do contrato.");
+  }
+
+  const alugariaNovamente = interpretarAlugariaNovamente(dados.alugariaNovamente);
+  if (alugariaNovamente === null) {
+    throw erro("alugariaNovamente", "Informe se você alugaria novamente para este inquilino.");
+  }
+
+  const comentarioFinal = String(dados.comentarioFinal ?? "").trim();
+  if (!comentarioFinal) {
+    throw erro("comentarioFinal", "Escreva um comentário final sobre a locação.");
+  }
+
+  return {
+    dataFim,
+    alugariaNovamente,
+    comentarioFinal,
+    status: STATUS_CONTRATO.ENCERRADO,
+  };
+}
+
+export function validarEncerramentoContrato(dados = {}, opcoes = {}) {
+  normalizarEncerramentoContrato(dados, opcoes);
+  return true;
+}

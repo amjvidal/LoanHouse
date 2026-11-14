@@ -1,5 +1,5 @@
-// Contratos: vincular inquilino à casa e consultar contratos (coleção contratos).
-// Task no GitHub: "Criar o serviço de contratos" (#56).
+// Contratos: vincular inquilino à casa, consultar e encerrar contratos (coleção contratos).
+// Tasks no GitHub: "Criar o serviço de contratos" (#56) e "Criar o encerramento de contrato" (#58).
 import {
   collection,
   doc,
@@ -20,7 +20,9 @@ import {
   dataIsoValida,
   formatarDataBr,
   normalizarDadosContrato,
+  normalizarEncerramentoContrato,
   validarContrato,
+  validarEncerramentoContrato,
 } from "../utils/validacao-contrato.js";
 
 export {
@@ -28,7 +30,9 @@ export {
   dataIsoValida,
   formatarDataBr,
   normalizarDadosContrato,
+  normalizarEncerramentoContrato,
   validarContrato,
+  validarEncerramentoContrato,
 };
 
 const contratos = collection(db, "contratos");
@@ -127,4 +131,62 @@ export async function criarContrato(dados) {
 
   await batch.commit();
   return refContrato.id;
+}
+
+export async function encerrarContrato(contratoId, dados = {}) {
+  const idLimpo = String(contratoId ?? "").trim();
+  if (!idLimpo) {
+    throw erroComCampo("contratoId", "ID do contrato inválido para encerramento.");
+  }
+
+  const contrato = await buscarContrato(idLimpo);
+  if (!contrato) {
+    throw erroComCampo("contratoId", "Contrato não encontrado para encerramento.");
+  }
+
+  if (contrato.status === STATUS_CONTRATO.ENCERRADO) {
+    throw erroComCampo("contratoId", "Este contrato já foi encerrado.");
+  }
+
+  const encerramento = normalizarEncerramentoContrato(dados, {
+    dataInicio: contrato.dataInicio,
+  });
+
+  const codigoCasa = String(contrato.casaId ?? "").trim().toUpperCase();
+  const idInquilino = String(contrato.inquilinoId ?? "").trim();
+
+  const [casa, inquilino] = await Promise.all([
+    codigoCasa ? buscarCasa(codigoCasa) : Promise.resolve(null),
+    idInquilino ? buscarInquilino(idInquilino) : Promise.resolve(null),
+  ]);
+
+  const batch = writeBatch(db);
+
+  batch.update(doc(db, "contratos", idLimpo), {
+    ...encerramento,
+    atualizadoEm: serverTimestamp(),
+  });
+
+  if (casa) {
+    batch.update(doc(db, "casas", codigoCasa), {
+      codigo: codigoCasa,
+      situacao: SITUACAO.VAGA,
+      contratoAtivoId: null,
+      inquilinoAtualId: null,
+      inquilinoNome: null,
+      inquilinoTelefone: null,
+      aluguelAtrasado: false,
+      atualizadoEm: serverTimestamp(),
+    });
+  }
+
+  if (inquilino) {
+    batch.update(doc(db, "inquilinos", idInquilino), {
+      alugariaNovamente: encerramento.alugariaNovamente,
+      atualizadoEm: serverTimestamp(),
+    });
+  }
+
+  await batch.commit();
+  return idLimpo;
 }
