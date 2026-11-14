@@ -13,8 +13,24 @@ service cloud.firestore {
       return logado() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
     }
 
+    function textoNaoVazio(valor) {
+      return valor is string && valor.size() > 0;
+    }
+
     function situacaoValida(s) {
       return s in ['vaga', 'alugada', 'atrasada'];
+    }
+
+    function estadoCivilValido(ec) {
+      return ec in ['solteiro', 'casado', 'divorciado', 'viuvo', 'uniao_estavel'];
+    }
+
+    function statusContratoValido(s) {
+      return s in ['ativo', 'encerrado'];
+    }
+
+    function statusPagamentoValido(s) {
+      return s in ['pendente', 'pago', 'atrasado'];
     }
 
     match /usuarios/{uid} {
@@ -38,20 +54,40 @@ service cloud.firestore {
     }
 
     match /inquilinos/{id} {
-      allow read, write: if autorizado();
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && textoNaoVazio(request.resource.data.nomeCompleto)
+        && textoNaoVazio(request.resource.data.cpf)
+        && textoNaoVazio(request.resource.data.telefone)
+        && (!('estadoCivil' in request.resource.data) || estadoCivilValido(request.resource.data.estadoCivil));
+
       match /fiadores/{fiadorId} {
-        allow read, write: if autorizado();
+        allow read, delete: if autorizado();
+        allow create, update: if autorizado()
+          && textoNaoVazio(request.resource.data.nomeCompleto)
+          && textoNaoVazio(request.resource.data.cpf)
+          && textoNaoVazio(request.resource.data.telefone)
+          && textoNaoVazio(request.resource.data.endereco);
       }
     }
 
     match /contratos/{id} {
-      allow read, write: if autorizado()
-        && (request.method == 'delete' || request.resource.data.status in ['ativo', 'encerrado']);
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && statusContratoValido(request.resource.data.status)
+        && textoNaoVazio(request.resource.data.casaId)
+        && textoNaoVazio(request.resource.data.inquilinoId)
+        && request.resource.data.valorAluguel is number
+        && request.resource.data.valorAluguel > 0
+        && request.resource.data.diaVencimento is int
+        && request.resource.data.diaVencimento >= 1
+        && request.resource.data.diaVencimento <= 31;
     }
 
     match /pagamentos/{id} {
-      allow read, write: if autorizado()
-        && (request.method == 'delete' || request.resource.data.status in ['pendente', 'pago', 'atrasado']);
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && statusPagamentoValido(request.resource.data.status);
     }
 
     match /eventos/{id} {

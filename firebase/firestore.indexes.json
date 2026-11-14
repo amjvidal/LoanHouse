@@ -9,6 +9,22 @@
       ]
     },
     {
+      "collectionGroup": "contratos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inquilinoId", "order": "ASCENDING" },
+        { "fieldPath": "dataInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contratos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "casaId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "pagamentos",
       "queryScope": "COLLECTION",
       "fields": [
