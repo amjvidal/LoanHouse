@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { gerarCodigoCasa, codigoDisponivel } from "../js/utils/codigo-casa.js";
 import {
   calcularSituacao, vencimentoDaReferencia, diasDeAtraso,
@@ -416,4 +417,29 @@ test("validação e normalização de encerramento de contrato", () => {
     ),
     (e) => e.campo === "comentarioFinal"
   );
+});
+
+test("regras e índices do Firestore para as coleções do sistema", () => {
+  const urlRegras = new URL("../../firebase/firestore.rules", import.meta.url);
+  const urlIndices = new URL("../../firebase/firestore.indexes.json", import.meta.url);
+
+  const regrasTexto = readFileSync(urlRegras, "utf8");
+  const indicesJson = JSON.parse(readFileSync(urlIndices, "utf8"));
+
+  // Garante que nenhuma regra de leitura (allow read) depende de request.resource
+  assert.equal(/allow\s+read\s*,\s*write\s*:[^;]*request\.resource/.test(regrasTexto), false);
+  assert.match(regrasTexto, /match \/inquilinos\/\{id\}/);
+  assert.match(regrasTexto, /match \/fiadores\/\{fiadorId\}/);
+  assert.match(regrasTexto, /match \/contratos\/\{id\}/);
+  assert.match(regrasTexto, /statusContratoValido\(request\.resource\.data\.status\)/);
+
+  assert.equal(Array.isArray(indicesJson.indexes), true);
+  const assinaturas = indicesJson.indexes.map(
+    (idx) => `${idx.collectionGroup}:${idx.fields.map((f) => `${f.fieldPath}_${f.order}`).join("+")}`
+  );
+  assert.equal(assinaturas.includes("contratos:casaId_ASCENDING+dataInicio_DESCENDING"), true);
+  assert.equal(assinaturas.includes("contratos:inquilinoId_ASCENDING+dataInicio_DESCENDING"), true);
+  assert.equal(assinaturas.includes("contratos:casaId_ASCENDING+status_ASCENDING"), true);
+  assert.equal(assinaturas.includes("pagamentos:casaId_ASCENDING+referencia_DESCENDING"), true);
+  assert.equal(assinaturas.includes("pagamentos:status_ASCENDING+vencimento_ASCENDING"), true);
 });
