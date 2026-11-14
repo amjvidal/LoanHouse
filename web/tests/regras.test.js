@@ -24,7 +24,9 @@ import {
   dataIsoValida,
   formatarDataBr,
   normalizarDadosContrato,
+  normalizarEncerramentoContrato,
   validarContrato,
+  validarEncerramentoContrato,
 } from "../js/utils/validacao-contrato.js";
 
 test("gera o código da casa", () => {
@@ -321,5 +323,67 @@ test("validação e normalização de contratos (vincular inquilino à casa)", (
       dataFim: "2026-11-10",
     }),
     (e) => e.campo === "dataFim" && /anterior/.test(e.message)
+  );
+});
+
+test("validação e normalização de encerramento de contrato", () => {
+  const encerradoSim = normalizarEncerramentoContrato(
+    {
+      alugariaNovamente: "sim",
+      comentarioFinal: "  Entregou o imóvel em ótimo estado e pagou tudo em dia.  ",
+    },
+    { dataInicio: "2026-01-10", hoje: "2026-11-12" }
+  );
+
+  assert.deepEqual(encerradoSim, {
+    dataFim: "2026-11-12",
+    alugariaNovamente: true,
+    comentarioFinal: "Entregou o imóvel em ótimo estado e pagou tudo em dia.",
+    status: STATUS_CONTRATO.ENCERRADO,
+  });
+
+  const encerradoNao = normalizarEncerramentoContrato(
+    {
+      dataFim: "2026-11-10",
+      alugariaNovamente: false,
+      comentarioFinal: "Atrasou várias mensalidades e deixou avarias na pintura.",
+    },
+    { dataInicio: "2026-05-01", hoje: "2026-11-12" }
+  );
+
+  assert.equal(encerradoNao.dataFim, "2026-11-10");
+  assert.equal(encerradoNao.alugariaNovamente, false);
+  assert.equal(encerradoNao.status, "encerrado");
+
+  assert.throws(
+    () => validarEncerramentoContrato(
+      { dataFim: "2026-02-30", alugariaNovamente: true, comentarioFinal: "Ok" },
+      { dataInicio: "2026-01-01" }
+    ),
+    (e) => e.campo === "dataFim"
+  );
+
+  assert.throws(
+    () => validarEncerramentoContrato(
+      { dataFim: "2026-04-01", alugariaNovamente: true, comentarioFinal: "Ok" },
+      { dataInicio: "2026-05-01" }
+    ),
+    (e) => e.campo === "dataFim" && /anterior/.test(e.message)
+  );
+
+  assert.throws(
+    () => validarEncerramentoContrato(
+      { dataFim: "2026-11-12", alugariaNovamente: "", comentarioFinal: "Ok" },
+      { dataInicio: "2026-01-01" }
+    ),
+    (e) => e.campo === "alugariaNovamente"
+  );
+
+  assert.throws(
+    () => validarEncerramentoContrato(
+      { dataFim: "2026-11-12", alugariaNovamente: "nao", comentarioFinal: "   " },
+      { dataInicio: "2026-01-01" }
+    ),
+    (e) => e.campo === "comentarioFinal"
   );
 });

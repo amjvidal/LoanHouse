@@ -1,15 +1,18 @@
-// Componente visual para exibir o contrato ativo da casa ou vincular um inquilino (criar contrato).
+// Componente visual para exibir o contrato ativo da casa, vincular inquilino ou encerrar contrato.
 import {
   buscarContratoAtivoDaCasa,
   criarContrato,
+  encerrarContrato,
   formatarDataBr,
   validarContrato,
+  validarEncerramentoContrato,
 } from "../services/contratos.js";
 import { buscarCasa } from "../services/casas.js";
 import { listarInquilinos } from "../services/inquilinos.js";
 import { hojeISO } from "../utils/situacao.js";
 
 const CAMPOS_CONTRATO = ["inquilinoId", "valorAluguel", "diaVencimento", "dataInicio", "dataFim"];
+const CAMPOS_ENCERRAMENTO = ["dataFim", "alugariaNovamente", "comentarioFinal"];
 
 function escaparHtml(texto) {
   return String(texto ?? "")
@@ -57,6 +60,7 @@ function renderizarResumoContratoAtivo(contrato) {
         <div class="cartao-fiador__acoes">
           <span class="badge-situacao badge-situacao--alugada">Contrato Ativo</span>
           ${linkInquilino ? `<a class="botao botao--secundario botao--modal" href="${linkInquilino}">Ver Inquilino</a>` : ""}
+          <button type="button" class="botao botao--perigo botao--modal" data-abrir-encerramento>Encerrar Contrato</button>
         </div>
       </div>
 
@@ -164,6 +168,54 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
           <button type="submit" class="botao botao--primario botao--compacto" data-salvar-contrato>Confirmar Vínculo</button>
         </div>
       </form>
+
+      <form class="form-fiador" data-form-encerramento novalidate hidden>
+        <div>
+          <h3 class="form-fiador__titulo">Encerrar Contrato de Locação</h3>
+          <p class="cartao-secao__subtitulo">Ao confirmar, o imóvel voltará a ficar vago e a avaliação será salva no histórico.</p>
+        </div>
+
+        <div class="grade-campos grade-campos--2col">
+          <div class="campo">
+            <label for="encerramento-data-fim">Data de Encerramento</label>
+            <input id="encerramento-data-fim" name="dataFim" type="date" required>
+          </div>
+
+          <div class="campo">
+            <label>Alugaria novamente para este inquilino?</label>
+            <input type="hidden" name="alugariaNovamente" value="">
+            <div class="grupo-opcoes" role="group" aria-label="Alugaria novamente para este inquilino?" data-grupo-alugaria>
+              <button type="button" class="opcao-status opcao-status--pago" data-opcao-alugaria="sim">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"/>
+                  <polyline points="8.5 12.5 11 15 15.5 9.5"/>
+                </svg>
+                <span>Sim, alugaria</span>
+              </button>
+              <button type="button" class="opcao-status opcao-status--pendente" data-opcao-alugaria="nao">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <span>Não alugaria</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="encerramento-comentario">Comentário final sobre a locação</label>
+          <textarea id="encerramento-comentario" name="comentarioFinal" rows="3" placeholder="Anote como o imóvel foi entregue, pontualidade nos pagamentos e observações para consultas futuras..." required></textarea>
+        </div>
+
+        <p class="mensagem-erro" data-erro-encerramento role="alert" hidden></p>
+
+        <div class="form-fiador__acoes">
+          <button type="button" class="botao botao--secundario botao--compacto" data-cancelar-encerramento>Cancelar</button>
+          <button type="submit" class="botao botao--perigo-solido botao--compacto" data-salvar-encerramento>Confirmar Encerramento</button>
+        </div>
+      </form>
     </section>
   `;
 
@@ -174,7 +226,15 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
   const btnCancelar = container.querySelector("[data-cancelar-contrato]");
   const btnSalvar = container.querySelector("[data-salvar-contrato]");
 
+  const formEncerramento = container.querySelector("[data-form-encerramento]");
+  const elErroEncerramento = container.querySelector("[data-erro-encerramento]");
+  const btnCancelarEncerramento = container.querySelector("[data-cancelar-encerramento]");
+  const btnSalvarEncerramento = container.querySelector("[data-salvar-encerramento]");
+  const grupoAlugaria = container.querySelector("[data-grupo-alugaria]");
+  const botoesAlugaria = container.querySelectorAll("[data-opcao-alugaria]");
+
   let dadosCasa = casa;
+  let contratoAtivoAtual = null;
 
   function limparErrosVisuais() {
     CAMPOS_CONTRATO.forEach((nome) => {
@@ -194,6 +254,59 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
     campo.setAttribute("aria-invalid", "true");
     campo.focus();
   }
+
+  function limparErrosEncerramento() {
+    CAMPOS_ENCERRAMENTO.forEach((nome) => {
+      const campo = formEncerramento.elements[nome];
+      if (!campo) return;
+      campo.classList.remove("input--obrigatorio");
+      campo.removeAttribute("aria-invalid");
+    });
+    grupoAlugaria?.classList.remove("grupo-opcoes--erro");
+    elErroEncerramento.hidden = true;
+    elErroEncerramento.textContent = "";
+  }
+
+  function destacarCampoEncerramento(nome) {
+    if (nome === "alugariaNovamente") {
+      grupoAlugaria?.classList.add("grupo-opcoes--erro");
+      botoesAlugaria[0]?.focus();
+      return;
+    }
+    const campo = nome ? formEncerramento.elements[nome] : null;
+    if (!campo) return;
+    campo.classList.add("input--obrigatorio");
+    campo.setAttribute("aria-invalid", "true");
+    campo.focus();
+  }
+
+  function selecionarOpcaoAlugaria(valor) {
+    formEncerramento.elements.alugariaNovamente.value = valor;
+    botoesAlugaria.forEach((btn) => {
+      btn.classList.toggle("opcao-status--ativa", btn.dataset.opcaoAlugaria === valor);
+    });
+    grupoAlugaria?.classList.remove("grupo-opcoes--erro");
+    elErroEncerramento.hidden = true;
+  }
+
+  botoesAlugaria.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selecionarOpcaoAlugaria(btn.dataset.opcaoAlugaria);
+    });
+  });
+
+  ["dataFim", "comentarioFinal"].forEach((nome) => {
+    formEncerramento.elements[nome]?.addEventListener("input", () => {
+      formEncerramento.elements[nome].classList.remove("input--obrigatorio");
+      formEncerramento.elements[nome].removeAttribute("aria-invalid");
+      elErroEncerramento.hidden = true;
+    });
+    formEncerramento.elements[nome]?.addEventListener("change", () => {
+      formEncerramento.elements[nome].classList.remove("input--obrigatorio");
+      formEncerramento.elements[nome].removeAttribute("aria-invalid");
+      elErroEncerramento.hidden = true;
+    });
+  });
 
   CAMPOS_CONTRATO.forEach((nome) => {
     form.elements[nome]?.addEventListener("input", () => {
@@ -234,6 +347,7 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
     form.elements.diaVencimento.value = "10";
     form.elements.dataInicio.value = hojeISO();
     form.elements.dataFim.value = "";
+    formEncerramento.hidden = true;
     form.hidden = false;
     btnAbrir.hidden = true;
 
@@ -257,6 +371,29 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
     btnAbrir.hidden = false;
   }
 
+  function abrirFormularioEncerramento() {
+    if (!contratoAtivoAtual) return;
+    limparErrosEncerramento();
+    formEncerramento.reset();
+    formEncerramento.elements.dataFim.value = hojeISO();
+    if (contratoAtivoAtual.dataInicio) {
+      formEncerramento.elements.dataFim.min = contratoAtivoAtual.dataInicio;
+    }
+    selecionarOpcaoAlugaria("sim");
+    formEncerramento.hidden = false;
+    const btnAbrirEnc = elCorpo.querySelector("[data-abrir-encerramento]");
+    if (btnAbrirEnc) btnAbrirEnc.hidden = true;
+    formEncerramento.elements.comentarioFinal.focus();
+  }
+
+  function fecharFormularioEncerramento() {
+    limparErrosEncerramento();
+    formEncerramento.reset();
+    formEncerramento.hidden = true;
+    const btnAbrirEnc = elCorpo.querySelector("[data-abrir-encerramento]");
+    if (btnAbrirEnc) btnAbrirEnc.hidden = false;
+  }
+
   async function carregarEstadoContrato() {
     try {
       const [casaAtualizada, contratoAtivo] = await Promise.all([
@@ -264,14 +401,20 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
         buscarContratoAtivoDaCasa(codigoLimpo),
       ]);
       if (casaAtualizada) dadosCasa = casaAtualizada;
+      contratoAtivoAtual = contratoAtivo;
 
       if (contratoAtivo) {
         form.hidden = true;
+        formEncerramento.hidden = true;
         btnAbrir.hidden = true;
         elCorpo.innerHTML = renderizarResumoContratoAtivo(contratoAtivo);
+        elCorpo
+          .querySelector("[data-abrir-encerramento]")
+          ?.addEventListener("click", abrirFormularioEncerramento);
         return;
       }
 
+      formEncerramento.hidden = true;
       btnAbrir.hidden = false;
       elCorpo.innerHTML = `
         <div class="area-anexos-vazia">
@@ -285,6 +428,7 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
 
   btnAbrir.addEventListener("click", abrirFormulario);
   btnCancelar.addEventListener("click", fecharFormulario);
+  btnCancelarEncerramento.addEventListener("click", fecharFormularioEncerramento);
 
   form.addEventListener("submit", async (evento) => {
     evento.preventDefault();
@@ -318,6 +462,38 @@ export async function montarSecaoContrato(alvo, { codigoCasa, casa = null, aoAtu
     }
   });
 
+  formEncerramento.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!contratoAtivoAtual) return;
+    limparErrosEncerramento();
+    btnSalvarEncerramento.disabled = true;
+
+    try {
+      const dadosEncerramento = {
+        dataFim: formEncerramento.elements.dataFim.value.trim(),
+        alugariaNovamente: formEncerramento.elements.alugariaNovamente.value,
+        comentarioFinal: formEncerramento.elements.comentarioFinal.value,
+      };
+
+      validarEncerramentoContrato(dadosEncerramento, {
+        dataInicio: contratoAtivoAtual.dataInicio,
+      });
+
+      await encerrarContrato(contratoAtivoAtual.id, dadosEncerramento);
+
+      formEncerramento.hidden = true;
+      await carregarEstadoContrato();
+      if (typeof aoAtualizar === "function") {
+        await aoAtualizar(dadosCasa);
+      }
+    } catch (e) {
+      destacarCampoEncerramento(e.campo);
+      elErroEncerramento.textContent = e.message || "Não foi possível encerrar o contrato.";
+      elErroEncerramento.hidden = false;
+    } finally {
+      btnSalvarEncerramento.disabled = false;
+    }
+  });
+
   await carregarEstadoContrato();
 }
-
