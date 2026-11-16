@@ -150,3 +150,12 @@ export function validarEncerramentoContrato(dados = {}, opcoes = {}) {
   normalizarEncerramentoContrato(dados, opcoes);
   return true;
 }
+
+export function ordenarHistoricoContratos(lista = []) {
+  if (!Array.isArray(lista)) return [];
+  return [...lista].sort((a, b) => {
+    const cmpInicio = String(b?.dataInicio || "").localeCompare(String(a?.dataInicio || ""));
+    if (cmpInicio !== 0) return cmpInicio;
+    return String(b?.dataFim || "").localeCompare(String(a?.dataFim || ""));
+  });
+}

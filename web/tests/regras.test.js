@@ -26,6 +26,7 @@ import {
   formatarDataBr,
   normalizarDadosContrato,
   normalizarEncerramentoContrato,
+  ordenarHistoricoContratos,
   validarContrato,
   validarEncerramentoContrato,
 } from "../js/utils/validacao-contrato.js";
@@ -416,6 +417,16 @@ test("validação e normalização de encerramento de contrato", () => {
       { dataInicio: "2026-01-01" }
     ),
     (e) => e.campo === "comentarioFinal"
+  );
+
+  const historicoOrdenado = ordenarHistoricoContratos([
+    { id: "c-antigo", dataInicio: "2023-02-01", dataFim: "2025-01-31", status: "encerrado" },
+    { id: "c-atual", dataInicio: "2025-02-01", dataFim: "2027-01-31", status: "ativo" },
+    { id: "c-intermediario", dataInicio: "2024-03-01", dataFim: "2024-12-31", status: "encerrado" },
+  ]);
+  assert.deepEqual(
+    historicoOrdenado.map((c) => c.id),
+    ["c-atual", "c-intermediario", "c-antigo"]
   );
 });
 

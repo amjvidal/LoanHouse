@@ -21,6 +21,7 @@ import {
   formatarDataBr,
   normalizarDadosContrato,
   normalizarEncerramentoContrato,
+  ordenarHistoricoContratos,
   validarContrato,
   validarEncerramentoContrato,
 } from "../utils/validacao-contrato.js";
@@ -31,6 +32,7 @@ export {
   formatarDataBr,
   normalizarDadosContrato,
   normalizarEncerramentoContrato,
+  ordenarHistoricoContratos,
   validarContrato,
   validarEncerramentoContrato,
 };
@@ -56,7 +58,7 @@ export async function listarContratosPorCasa(casaId) {
   const snap = await getDocs(
     query(contratos, where("casaId", "==", codigoLimpo), orderBy("dataInicio", "desc"))
   );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return ordenarHistoricoContratos(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
 }
 
 export async function listarContratosPorInquilino(inquilinoId) {

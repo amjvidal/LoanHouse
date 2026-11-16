@@ -10,6 +10,7 @@ import { temPendencia } from "../utils/situacao.js";
 import { preencherCabecalhoUsuario } from "../components/cartao-casa.js";
 import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
 import { montarSecaoContrato } from "../components/secao-contrato.js";
+import { montarSecaoHistoricoCasa } from "../components/secao-historico-casa.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -342,6 +343,17 @@ botaoExcluir?.addEventListener("click", () => {
   });
 });
 
+function sincronizarAtalhoInquilino(casa) {
+  const elAtalho = document.querySelector("[data-atalho-inquilino]");
+  if (!elAtalho) return;
+  if (casa?.inquilinoAtualId) {
+    elAtalho.href = `inquilino.html?id=${encodeURIComponent(casa.inquilinoAtualId)}`;
+    elAtalho.hidden = false;
+  } else {
+    elAtalho.hidden = true;
+  }
+}
+
 montarMenu("casas");
 preencherCabecalhoUsuario();
 
@@ -357,7 +369,10 @@ exigirLogin(async (usuario) => {
     form.situacao.value = "vaga";
     sincronizarBotoesToggle();
     atualizarCabecalhoCasa();
-    await montarSecaoContrato("[data-secao-contrato]");
+    await Promise.all([
+      montarSecaoContrato("[data-secao-contrato]"),
+      montarSecaoHistoricoCasa("[data-secao-historico]"),
+    ]);
     return;
   }
 
@@ -383,6 +398,7 @@ exigirLogin(async (usuario) => {
   form.valorAluguel.value = casa.valorAluguel ?? casa.valor ?? "";
   form.situacao.value = casa.situacao || "vaga";
   form.inquilinoNome.value = casa.inquilinoNome || "";
+  sincronizarAtalhoInquilino(casa);
 
   estadoContas.aluguelPago = !(casa.situacao === "atrasada" || casa.aluguelAtrasado === true);
   estadoContas.iptuPago = casa.iptuPago !== false;
@@ -393,20 +409,25 @@ exigirLogin(async (usuario) => {
   atualizarDestaqueNumero();
   atualizarCabecalhoCasa();
 
-  await montarSecaoContrato("[data-secao-contrato]", {
-    codigoCasa: codigoUrl,
-    casa,
-    aoAtualizar: async () => {
-      const atualizada = await buscarCasa(codigoUrl);
-      if (!atualizada) return;
-      form.situacao.value = atualizada.situacao || "alugada";
-      form.inquilinoNome.value = atualizada.inquilinoNome || "";
-      if (atualizada.valorAluguel !== undefined) {
-        form.valorAluguel.value = atualizada.valorAluguel;
-      }
-      estadoContas.aluguelPago = !(atualizada.situacao === "atrasada" || atualizada.aluguelAtrasado === true);
-      sincronizarBotoesToggle();
-      atualizarCabecalhoCasa();
-    },
-  });
+  await Promise.all([
+    montarSecaoContrato("[data-secao-contrato]", {
+      codigoCasa: codigoUrl,
+      casa,
+      aoAtualizar: async () => {
+        const atualizada = await buscarCasa(codigoUrl);
+        if (!atualizada) return;
+        form.situacao.value = atualizada.situacao || "alugada";
+        form.inquilinoNome.value = atualizada.inquilinoNome || "";
+        sincronizarAtalhoInquilino(atualizada);
+        if (atualizada.valorAluguel !== undefined) {
+          form.valorAluguel.value = atualizada.valorAluguel;
+        }
+        estadoContas.aluguelPago = !(atualizada.situacao === "atrasada" || atualizada.aluguelAtrasado === true);
+        sincronizarBotoesToggle();
+        atualizarCabecalhoCasa();
+        await montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl);
+      },
+    }),
+    montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl),
+  ]);
 });
