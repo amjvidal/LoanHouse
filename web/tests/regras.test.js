@@ -30,6 +30,15 @@ import {
   validarContrato,
   validarEncerramentoContrato,
 } from "../js/utils/validacao-contrato.js";
+import {
+  STATUS_PAGAMENTO,
+  classificarStatusMensalidade,
+  construirMensalidadeContrato,
+  formatarReferenciaCurta,
+  formatarReferenciaExtenso,
+  ordenarMensalidadesPorReferencia,
+  referenciaValida,
+} from "../js/utils/validacao-pagamento.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -453,4 +462,43 @@ test("regras e índices do Firestore para as coleções do sistema", () => {
   assert.equal(assinaturas.includes("contratos:casaId_ASCENDING+status_ASCENDING"), true);
   assert.equal(assinaturas.includes("pagamentos:casaId_ASCENDING+referencia_DESCENDING"), true);
   assert.equal(assinaturas.includes("pagamentos:status_ASCENDING+vencimento_ASCENDING"), true);
+});
+
+test("mensalidades de pagamento da casa (formatação, status e ordenação)", () => {
+  assert.equal(referenciaValida("2026-11"), true);
+  assert.equal(referenciaValida("2026-13"), false);
+  assert.equal(formatarReferenciaCurta("2026-11"), "11/2026");
+  assert.equal(formatarReferenciaExtenso("2026-11"), "Novembro de 2026");
+
+  const mensalidade = construirMensalidadeContrato(
+    {
+      id: "contrato-sao-123",
+      casaId: "sao-123",
+      inquilinoId: "joao-carlos-silva",
+      inquilinoNome: "João Carlos da Silva",
+      valorAluguel: 1200,
+      diaVencimento: 10,
+    },
+    "2026-11",
+    "2026-11-05"
+  );
+  assert.equal(mensalidade.id, "contrato-sao-123_2026-11");
+  assert.equal(mensalidade.vencimento, "2026-11-10");
+  assert.equal(mensalidade.status, STATUS_PAGAMENTO.PENDENTE);
+
+  assert.equal(
+    classificarStatusMensalidade({ status: "pendente", vencimento: "2026-11-10" }, "2026-11-16"),
+    STATUS_PAGAMENTO.ATRASADO
+  );
+  assert.equal(
+    classificarStatusMensalidade({ status: "pago", vencimento: "2026-11-10" }, "2026-11-16"),
+    STATUS_PAGAMENTO.PAGO
+  );
+
+  const ordenadas = ordenarMensalidadesPorReferencia([
+    { id: "m1", referencia: "2026-09" },
+    { id: "m3", referencia: "2026-11" },
+    { id: "m2", referencia: "2026-10" },
+  ]);
+  assert.deepEqual(ordenadas.map((m) => m.id), ["m3", "m2", "m1"]);
 });
