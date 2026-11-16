@@ -1059,6 +1059,38 @@ input:focus, select:focus, textarea:focus {
   font-size: 18px;
 }
 
+/* Atalho de inquilino e Histórico de Inquilinos na Casa (#37, #59) */
+.rotulo-com-atalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.atalho-inline {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-primaria);
+  text-decoration: none;
+}
+.atalho-inline:hover {
+  text-decoration: underline;
+}
+.avatar-inquilino--historico {
+  width: 40px;
+  height: 40px;
+  font-size: 15px;
+}
+.cartao-historico__comentario {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #334155;
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
   .grade-casas-continua,
