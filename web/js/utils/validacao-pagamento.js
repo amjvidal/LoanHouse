@@ -1,5 +1,6 @@
 // Regras puras para geração, cálculo, formatação e validação de mensalidades (coleção pagamentos).
 import { hojeISO, mensalidadeAtrasada, vencimentoDaReferencia } from "./situacao.js";
+import { dataIsoValida } from "./validacao-contrato.js";
 
 export const STATUS_PAGAMENTO = Object.freeze({
   PENDENTE: "pendente",
@@ -178,3 +179,37 @@ export function ordenarMensalidades(mensalidades = []) {
 }
 
 export const ordenarMensalidadesPorReferencia = ordenarMensalidades;
+
+export function formatarDataInputBr(valor) {
+  const d = String(valor ?? "").replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
+export function dataBrValida(valor) {
+  const texto = String(valor ?? "").trim();
+  const match = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return false;
+  const dia = Number(match[1]);
+  const mes = Number(match[2]);
+  const ano = Number(match[3]);
+  if (ano < 1900 || ano > 2100 || mes < 1 || mes > 12 || dia < 1 || dia > 31) return false;
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  return (
+    data.getUTCFullYear() === ano &&
+    data.getUTCMonth() === mes - 1 &&
+    data.getUTCDate() === dia
+  );
+}
+
+export function converterDataBrParaIso(valor) {
+  const texto = String(valor ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+    return dataIsoValida(texto) ? texto : null;
+  }
+  if (!dataBrValida(texto)) return null;
+  const [dia, mes, ano] = texto.split("/");
+  return `${ano}-${mes}-${dia}`;
+}
+

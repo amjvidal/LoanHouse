@@ -730,6 +730,10 @@ input:focus, select:focus, textarea:focus {
   justify-content: center;
   flex-shrink: 0;
 }
+.modal-confirmacao__icone--sucesso {
+  background: #e8f5e9;
+  color: #2e6b3e;
+}
 .modal-confirmacao__conteudo {
   min-width: 0;
 }
@@ -754,6 +758,44 @@ input:focus, select:focus, textarea:focus {
   font-size: 13px;
   font-weight: 600;
   color: #8c2323;
+}
+.modal-confirmacao__aviso--sucesso {
+  background: #f0f9f2;
+  border-color: #c8e6cf;
+  color: #2e6b3e;
+}
+.campo--modal-pagamento {
+  margin-top: 14px;
+}
+.campo--modal-pagamento .campo__dica {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--cor-texto-suave);
+}
+.campo-data-br {
+  position: relative;
+}
+.campo-data-br input[type="text"] {
+  letter-spacing: 0.5px;
+}
+.campo-data-br__nativo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.campo-data-br__botao {
+  color: var(--cor-texto-suave);
+}
+.campo-data-br__botao:hover {
+  color: var(--cor-primaria);
+  background: #eef4fa;
 }
 .modal-confirmacao__erro {
   margin-top: 12px;
@@ -1092,6 +1134,23 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Seção de Pagamentos do Aluguel na Casa (#70, #71) */
+.alerta-sucesso-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #f0f9f2;
+  border: 1px solid #c8e6cf;
+  color: #245832;
+  font-size: 14px;
+  font-weight: 600;
+  animation: modal-fade-in 0.15s ease-out;
+}
+.alerta-sucesso-inline svg {
+  flex-shrink: 0;
+  color: #2e6b3e;
+}
 .resumo-pagamentos {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
