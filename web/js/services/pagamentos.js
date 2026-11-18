@@ -28,6 +28,7 @@ import {
 import {
   STATUS_PAGAMENTO,
   adicionarMesesReferencia,
+  converterDataBrParaIso,
   formatarReferenciaBr,
   idMensalidade,
   listarReferenciasContrato,
@@ -271,7 +272,8 @@ export async function registrarPagamento(pagamentoId, opcoesOuHoje = {}) {
   const dataBruta = typeof opcoesOuHoje === "object" && opcoesOuHoje?.dataPagamento
     ? String(opcoesOuHoje.dataPagamento).trim()
     : hoje;
-  const dataPagamento = /^\d{4}-\d{2}-\d{2}$/.test(dataBruta) ? dataBruta : hoje;
+  const dataIso = converterDataBrParaIso(dataBruta);
+  const dataPagamento = dataIso || (/^\d{4}-\d{2}-\d{2}$/.test(dataBruta) ? dataBruta : hoje);
 
   await updateDoc(doc(db, "pagamentos", idLimpo), {
     status: STATUS_PAGAMENTO.PAGO,

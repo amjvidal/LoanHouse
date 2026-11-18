@@ -1,4 +1,9 @@
 // Pop-up compacto de confirmação alinhado à estética do site.
+import { formatarDataBr } from "../utils/validacao-contrato.js";
+import {
+  converterDataBrParaIso,
+  formatarDataInputBr,
+} from "../utils/validacao-pagamento.js";
 
 function escaparHtml(texto) {
   return String(texto ?? "")
@@ -112,7 +117,13 @@ export function abrirModalRegistroPagamento({
 } = {}) {
   const elementoAnterior = document.activeElement;
   let processando = false;
-  const hojeStr = dataPadrao || new Date().toISOString().slice(0, 10);
+
+  let isoPadrao = new Date().toISOString().slice(0, 10);
+  if (dataPadrao) {
+    const convertido = converterDataBrParaIso(dataPadrao);
+    if (convertido) isoPadrao = convertido;
+  }
+  const dataBrInicial = formatarDataBr(isoPadrao);
 
   const fundo = document.createElement("div");
   fundo.className = "modal-confirmacao";
@@ -134,7 +145,39 @@ export function abrirModalRegistroPagamento({
 
       <div class="campo campo--modal-pagamento">
         <label for="modal-pagamento-data">Data do recebimento</label>
-        <input id="modal-pagamento-data" type="date" value="${escaparHtml(hojeStr)}" required>
+        <div class="campo-com-icone campo-data-br">
+          <input
+            id="modal-pagamento-data"
+            type="text"
+            inputmode="numeric"
+            placeholder="DD/MM/AAAA"
+            value="${escaparHtml(dataBrInicial)}"
+            maxlength="10"
+            autocomplete="off"
+            required
+          >
+          <button
+            type="button"
+            class="campo-com-icone__botao campo-data-br__botao"
+            aria-label="Abrir calendário para escolher data"
+            title="Escolher no calendário"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </button>
+          <input
+            type="date"
+            class="campo-data-br__nativo"
+            tabindex="-1"
+            aria-hidden="true"
+            value="${escaparHtml(isoPadrao)}"
+          >
+        </div>
+        <p class="campo__dica">Digite no formato DD/MM/AAAA ou escolha no calendário</p>
       </div>
 
       <p class="modal-confirmacao__erro mensagem-erro" role="alert" hidden></p>
@@ -146,9 +189,42 @@ export function abrirModalRegistroPagamento({
   `;
 
   const inputData = fundo.querySelector("#modal-pagamento-data");
+  const inputNativo = fundo.querySelector(".campo-data-br__nativo");
+  const btnCalendario = fundo.querySelector(".campo-data-br__botao");
   const btnCancelar = fundo.querySelector("[data-modal-cancelar]");
   const btnConfirmar = fundo.querySelector("[data-modal-confirmar]");
   const elErro = fundo.querySelector(".modal-confirmacao__erro");
+
+  inputData.addEventListener("input", () => {
+    inputData.value = formatarDataInputBr(inputData.value);
+    elErro.hidden = true;
+    const iso = converterDataBrParaIso(inputData.value);
+    if (iso && inputNativo) {
+      inputNativo.value = iso;
+    }
+  });
+
+  if (btnCalendario && inputNativo) {
+    btnCalendario.addEventListener("click", () => {
+      try {
+        if (typeof inputNativo.showPicker === "function") {
+          inputNativo.showPicker();
+        } else {
+          inputNativo.click();
+        }
+      } catch {
+        inputData.focus();
+      }
+    });
+
+    inputNativo.addEventListener("change", () => {
+      if (inputNativo.value) {
+        inputData.value = formatarDataBr(inputNativo.value);
+        elErro.hidden = true;
+        inputData.focus();
+      }
+    });
+  }
 
   function fechar() {
     if (processando) return;
@@ -174,9 +250,17 @@ export function abrirModalRegistroPagamento({
 
   btnConfirmar.addEventListener("click", async () => {
     if (processando) return;
-    const dataEscolhida = inputData.value.trim();
-    if (!dataEscolhida) {
-      elErro.textContent = "Informe a data do recebimento.";
+    const dataDigitada = inputData.value.trim();
+    if (!dataDigitada) {
+      elErro.textContent = "Informe a data do recebimento no formato DD/MM/AAAA.";
+      elErro.hidden = false;
+      inputData.focus();
+      return;
+    }
+
+    const dataIso = converterDataBrParaIso(dataDigitada);
+    if (!dataIso) {
+      elErro.textContent = "Data inválida. Use o formato DD/MM/AAAA (ex: 18/11/2026).";
       elErro.hidden = false;
       inputData.focus();
       return;
@@ -189,7 +273,7 @@ export function abrirModalRegistroPagamento({
     btnConfirmar.textContent = rotuloProcessando;
 
     try {
-      await aoConfirmar?.(dataEscolhida);
+      await aoConfirmar?.(dataIso);
       processando = false;
       fechar();
     } catch (erro) {
@@ -205,5 +289,6 @@ export function abrirModalRegistroPagamento({
   document.addEventListener("keydown", aoTeclar);
   document.body.appendChild(fundo);
   inputData.focus();
+  inputData.select();
 }
 

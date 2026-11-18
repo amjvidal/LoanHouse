@@ -36,6 +36,9 @@ import {
   adicionarMesesReferencia,
   classificarStatusMensalidade,
   construirMensalidadeContrato,
+  converterDataBrParaIso,
+  dataBrValida,
+  formatarDataInputBr,
   formatarReferenciaBr,
   formatarReferenciaCurta,
   formatarReferenciaExtenso,
@@ -715,5 +718,23 @@ test("ação de registrar pagamento e reabertura de mensalidade com recálculo d
   resumo = resumirSituacaoCasa(contrato, [mensalidadeReaberta], hoje);
   assert.equal(resumo.situacao, "atrasada");
   assert.equal(resumo.aluguelAtrasado, true);
+
+  // Formatação e conversão da data brasileira DD/MM/AAAA para registrar pagamento
+  assert.equal(formatarDataInputBr("18"), "18");
+  assert.equal(formatarDataInputBr("1811"), "18/11");
+  assert.equal(formatarDataInputBr("18112026"), "18/11/2026");
+  assert.equal(formatarDataInputBr("18/11/2026"), "18/11/2026");
+
+  assert.equal(dataBrValida("18/11/2026"), true);
+  assert.equal(dataBrValida("29/02/2024"), true); // ano bissexto
+  assert.equal(dataBrValida("31/02/2026"), false);
+  assert.equal(dataBrValida("32/01/2026"), false);
+  assert.equal(dataBrValida("15/13/2026"), false);
+  assert.equal(dataBrValida(""), false);
+
+  assert.equal(converterDataBrParaIso("18/11/2026"), "2026-11-18");
+  assert.equal(converterDataBrParaIso("2026-11-18"), "2026-11-18");
+  assert.equal(converterDataBrParaIso("31/02/2026"), null);
+  assert.equal(converterDataBrParaIso("data-invalida"), null);
 });
 

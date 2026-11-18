@@ -767,6 +767,36 @@ input:focus, select:focus, textarea:focus {
 .campo--modal-pagamento {
   margin-top: 14px;
 }
+.campo--modal-pagamento .campo__dica {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--cor-texto-suave);
+}
+.campo-data-br {
+  position: relative;
+}
+.campo-data-br input[type="text"] {
+  letter-spacing: 0.5px;
+}
+.campo-data-br__nativo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.campo-data-br__botao {
+  color: var(--cor-texto-suave);
+}
+.campo-data-br__botao:hover {
+  color: var(--cor-primaria);
+  background: #eef4fa;
+}
 .modal-confirmacao__erro {
   margin-top: 12px;
   font-size: 14px;
