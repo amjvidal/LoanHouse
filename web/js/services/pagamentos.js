@@ -257,7 +257,7 @@ export async function sincronizarSituacaoCasas(listaCasas = null, hoje = hojeISO
   );
 }
 
-export async function registrarPagamento(pagamentoId, hoje = hojeISO()) {
+export async function registrarPagamento(pagamentoId, opcoesOuHoje = {}) {
   const idLimpo = String(pagamentoId ?? "").trim();
   if (!idLimpo) {
     throw new Error("ID da mensalidade inválido para registrar pagamento.");
@@ -266,8 +266,16 @@ export async function registrarPagamento(pagamentoId, hoje = hojeISO()) {
   if (!pagamento) {
     throw new Error("Mensalidade não encontrada para registrar pagamento.");
   }
+
+  const hoje = typeof opcoesOuHoje === "string" ? opcoesOuHoje : (opcoesOuHoje?.hoje || hojeISO());
+  const dataBruta = typeof opcoesOuHoje === "object" && opcoesOuHoje?.dataPagamento
+    ? String(opcoesOuHoje.dataPagamento).trim()
+    : hoje;
+  const dataPagamento = /^\d{4}-\d{2}-\d{2}$/.test(dataBruta) ? dataBruta : hoje;
+
   await updateDoc(doc(db, "pagamentos", idLimpo), {
     status: STATUS_PAGAMENTO.PAGO,
+    dataPagamento,
     pagoEm: serverTimestamp(),
     atualizadoEm: serverTimestamp(),
   });
@@ -276,7 +284,7 @@ export async function registrarPagamento(pagamentoId, hoje = hojeISO()) {
     ? await recalcularSituacaoCasa(pagamento.casaId, hoje)
     : null;
 
-  return { ...pagamento, status: STATUS_PAGAMENTO.PAGO, resumoCasa };
+  return { ...pagamento, status: STATUS_PAGAMENTO.PAGO, dataPagamento, resumoCasa };
 }
 
 export async function desfazerPagamento(pagamentoId, hoje = hojeISO()) {
@@ -292,6 +300,7 @@ export async function desfazerPagamento(pagamentoId, hoje = hojeISO()) {
     pagamento.vencimento < hoje ? STATUS_PAGAMENTO.ATRASADO : STATUS_PAGAMENTO.PENDENTE;
   await updateDoc(doc(db, "pagamentos", idLimpo), {
     status: novoStatus,
+    dataPagamento: null,
     pagoEm: null,
     atualizadoEm: serverTimestamp(),
   });
@@ -300,5 +309,5 @@ export async function desfazerPagamento(pagamentoId, hoje = hojeISO()) {
     ? await recalcularSituacaoCasa(pagamento.casaId, hoje)
     : null;
 
-  return { ...pagamento, status: novoStatus, pagoEm: null, resumoCasa };
+  return { ...pagamento, status: novoStatus, dataPagamento: null, pagoEm: null, resumoCasa };
 }

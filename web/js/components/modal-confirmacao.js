@@ -100,3 +100,110 @@ export function abrirModalConfirmacao({
   btnCancelar.focus();
 }
 
+export function abrirModalRegistroPagamento({
+  titulo = "Registrar Pagamento",
+  mensagem = "Confirme o recebimento do aluguel:",
+  aviso = "",
+  dataPadrao = "",
+  rotuloConfirmar = "Confirmar Pagamento",
+  rotuloProcessando = "Registrando...",
+  rotuloCancelar = "Cancelar",
+  aoConfirmar,
+} = {}) {
+  const elementoAnterior = document.activeElement;
+  let processando = false;
+  const hojeStr = dataPadrao || new Date().toISOString().slice(0, 10);
+
+  const fundo = document.createElement("div");
+  fundo.className = "modal-confirmacao";
+  fundo.innerHTML = `
+    <div class="modal-confirmacao__caixa" role="dialog" aria-modal="true" aria-labelledby="modal-pagamento-titulo">
+      <div class="modal-confirmacao__topo">
+        <span class="modal-confirmacao__icone modal-confirmacao__icone--sucesso" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="8.5 12.5 11 15 15.5 9.5"/>
+          </svg>
+        </span>
+        <div class="modal-confirmacao__conteudo">
+          <h3 id="modal-pagamento-titulo" class="modal-confirmacao__titulo">${escaparHtml(titulo)}</h3>
+          <p class="modal-confirmacao__texto">${escaparHtml(mensagem)}</p>
+          ${aviso ? `<p class="modal-confirmacao__aviso modal-confirmacao__aviso--sucesso">${escaparHtml(aviso)}</p>` : ""}
+        </div>
+      </div>
+
+      <div class="campo campo--modal-pagamento">
+        <label for="modal-pagamento-data">Data do recebimento</label>
+        <input id="modal-pagamento-data" type="date" value="${escaparHtml(hojeStr)}" required>
+      </div>
+
+      <p class="modal-confirmacao__erro mensagem-erro" role="alert" hidden></p>
+      <div class="modal-confirmacao__acoes">
+        <button type="button" class="botao botao--secundario botao--modal" data-modal-cancelar>${escaparHtml(rotuloCancelar)}</button>
+        <button type="button" class="botao botao--primario botao--modal" data-modal-confirmar>${escaparHtml(rotuloConfirmar)}</button>
+      </div>
+    </div>
+  `;
+
+  const inputData = fundo.querySelector("#modal-pagamento-data");
+  const btnCancelar = fundo.querySelector("[data-modal-cancelar]");
+  const btnConfirmar = fundo.querySelector("[data-modal-confirmar]");
+  const elErro = fundo.querySelector(".modal-confirmacao__erro");
+
+  function fechar() {
+    if (processando) return;
+    document.removeEventListener("keydown", aoTeclar);
+    fundo.remove();
+    if (elementoAnterior && typeof elementoAnterior.focus === "function") {
+      elementoAnterior.focus();
+    }
+  }
+
+  function aoTeclar(evento) {
+    if (evento.key === "Escape") {
+      evento.preventDefault();
+      fechar();
+    }
+  }
+
+  fundo.addEventListener("click", (evento) => {
+    if (evento.target === fundo) fechar();
+  });
+
+  btnCancelar.addEventListener("click", fechar);
+
+  btnConfirmar.addEventListener("click", async () => {
+    if (processando) return;
+    const dataEscolhida = inputData.value.trim();
+    if (!dataEscolhida) {
+      elErro.textContent = "Informe a data do recebimento.";
+      elErro.hidden = false;
+      inputData.focus();
+      return;
+    }
+
+    processando = true;
+    elErro.hidden = true;
+    btnConfirmar.disabled = true;
+    btnCancelar.disabled = true;
+    btnConfirmar.textContent = rotuloProcessando;
+
+    try {
+      await aoConfirmar?.(dataEscolhida);
+      processando = false;
+      fechar();
+    } catch (erro) {
+      processando = false;
+      btnConfirmar.disabled = false;
+      btnCancelar.disabled = false;
+      btnConfirmar.textContent = rotuloConfirmar;
+      elErro.textContent = erro?.message || "Não foi possível registrar o pagamento.";
+      elErro.hidden = false;
+    }
+  });
+
+  document.addEventListener("keydown", aoTeclar);
+  document.body.appendChild(fundo);
+  inputData.focus();
+}
+

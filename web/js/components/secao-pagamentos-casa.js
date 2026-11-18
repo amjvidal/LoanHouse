@@ -1,36 +1,27 @@
 // Componente visual da seção de Pagamentos do Aluguel na tela de detalhe da casa (#70, #71).
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where,
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { db } from "../services/firebase.js";
 import { buscarContratoAtivoDaCasa, formatarDataBr } from "../services/contratos.js";
 import {
-  SITUACAO,
-  calcularSituacao,
-  diasDeAtraso,
-  hojeISO,
-} from "../utils/situacao.js";
+  desfazerPagamento,
+  gerarMensalidadeReferencia,
+  gerarMensalidadesContrato,
+  listarPagamentosPorCasa,
+  recalcularSituacaoCasa,
+  registrarPagamento,
+} from "../services/pagamentos.js";
+import { diasDeAtraso, hojeISO } from "../utils/situacao.js";
 import {
   STATUS_PAGAMENTO,
   classificarStatusMensalidade,
-  construirMensalidadeContrato,
   formatarReferenciaCurta,
   formatarReferenciaExtenso,
-  ordenarMensalidadesPorReferencia,
+  ordenarMensalidades,
   referenciaValida,
 } from "../utils/validacao-pagamento.js";
 import { formatarMoeda } from "./cartao-casa.js";
-
-const colecaoPagamentos = collection(db, "pagamentos");
+import {
+  abrirModalConfirmacao,
+  abrirModalRegistroPagamento,
+} from "./modal-confirmacao.js";
 
 function escaparHtml(texto) {
   return String(texto ?? "")
@@ -144,48 +135,6 @@ function renderizarCardMensalidade(pagamento, hoje) {
   `;
 }
 
-async function listarPagamentosDaCasa(codigoCasa) {
-  const snap = await getDocs(
-    query(colecaoPagamentos, where("casaId", "==", codigoCasa), orderBy("referencia", "desc"))
-  );
-  return ordenarMensalidadesPorReferencia(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-}
-
-async function garantirMensalidadeMesAtual(contrato, hoje) {
-  if (!contrato?.id) return;
-  const referenciaAtual = hoje.slice(0, 7);
-  const inicioRef = String(contrato.dataInicio || "").slice(0, 7);
-  if (inicioRef && referenciaAtual < inicioRef) return;
-
-  const mensalidade = construirMensalidadeContrato(contrato, referenciaAtual, hoje);
-  const refDoc = doc(db, "pagamentos", mensalidade.id);
-  const snap = await getDoc(refDoc);
-  if (!snap.exists()) {
-    const { id, ...dados } = mensalidade;
-    await setDoc(refDoc, {
-      ...dados,
-      criadoEm: serverTimestamp(),
-    });
-  }
-}
-
-async function sincronizarSituacaoCasaComPagamentos(codigoCasa, contratoAtivo, pagamentos, hoje) {
-  if (!codigoCasa) return;
-  const listagemContrato = contratoAtivo
-    ? pagamentos.filter((p) => p.contratoId === contratoAtivo.id)
-    : pagamentos;
-  const novaSituacao = contratoAtivo
-    ? calcularSituacao(contratoAtivo, listagemContrato, hoje)
-    : SITUACAO.VAGA;
-
-  await updateDoc(doc(db, "casas", codigoCasa), {
-    codigo: codigoCasa,
-    situacao: novaSituacao,
-    aluguelAtrasado: novaSituacao === SITUACAO.ATRASADA,
-    atualizadoEm: serverTimestamp(),
-  });
-}
-
 export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar = null } = {}) {
   const container = typeof alvo === "string" ? document.querySelector(alvo) : alvo;
   if (!container) return;
@@ -225,6 +174,8 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
         </button>
       </div>
 
+      <div data-alerta-sucesso-pagamento hidden></div>
+
       <div class="resumo-pagamentos" data-resumo-pagamentos hidden></div>
 
       <form class="form-fiador" data-form-lancar-mes novalidate hidden>
@@ -254,6 +205,7 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
 
   const elSubtitulo = container.querySelector("[data-subtitulo-pagamentos]");
   const elResumo = container.querySelector("[data-resumo-pagamentos]");
+  const elAlertaSucesso = container.querySelector("[data-alerta-sucesso-pagamento]");
   const elLista = container.querySelector("[data-lista-pagamentos]");
   const btnAbrirLancar = container.querySelector("[data-abrir-lancar-mes]");
   const formLancar = container.querySelector("[data-form-lancar-mes]");
@@ -263,6 +215,24 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
 
   let contratoAtivo = null;
   let pagamentos = [];
+  let timerSucesso = null;
+
+  function exibirAlertaSucesso(texto) {
+    if (!elAlertaSucesso) return;
+    elAlertaSucesso.className = "alerta-sucesso-inline";
+    elAlertaSucesso.innerHTML = `
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="8.5 12.5 11 15 15.5 9.5"/>
+      </svg>
+      <span>${escaparHtml(texto)}</span>
+    `;
+    elAlertaSucesso.hidden = false;
+    clearTimeout(timerSucesso);
+    timerSucesso = setTimeout(() => {
+      elAlertaSucesso.hidden = true;
+    }, 6000);
+  }
 
   function renderizarPainelPagamentos() {
     if (!pagamentos.length) {
@@ -307,13 +277,13 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
       contratoAtivo = await buscarContratoAtivoDaCasa(codigoLimpo);
       if (contratoAtivo) {
         btnAbrirLancar.hidden = !formLancar.hidden;
-        await garantirMensalidadeMesAtual(contratoAtivo, hoje).catch(() => {});
+        await gerarMensalidadesContrato(contratoAtivo, { hoje }).catch(() => {});
       } else {
         btnAbrirLancar.hidden = true;
         formLancar.hidden = true;
       }
 
-      pagamentos = await listarPagamentosDaCasa(codigoLimpo);
+      pagamentos = ordenarMensalidades(await listarPagamentosPorCasa(codigoLimpo));
       renderizarPainelPagamentos();
     } catch (erro) {
       elLista.innerHTML = `<p class="mensagem-erro">${escaparHtml(erro?.message || "Erro ao carregar as mensalidades da casa.")}</p>`;
@@ -351,28 +321,18 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
         throw new Error("Informe um valor válido maior que zero para a mensalidade.");
       }
 
-      const mensalidade = construirMensalidadeContrato(
+      await gerarMensalidadeReferencia(
         { ...contratoAtivo, valorAluguel: valor },
         referencia,
         hoje
       );
-      const refDoc = doc(db, "pagamentos", mensalidade.id);
-      const existente = await getDoc(refDoc);
-      if (existente.exists()) {
-        throw new Error(`A mensalidade de ${formatarReferenciaCurta(referencia)} já existe para este contrato.`);
-      }
-
-      const { id, ...dados } = mensalidade;
-      await setDoc(refDoc, {
-        ...dados,
-        criadoEm: serverTimestamp(),
-      });
 
       formLancar.hidden = true;
       btnAbrirLancar.hidden = false;
       await recarregarPagamentos();
-      await sincronizarSituacaoCasaComPagamentos(codigoLimpo, contratoAtivo, pagamentos, hoje);
-      if (typeof aoAtualizar === "function") await aoAtualizar();
+      const resumoAtualizado = await recalcularSituacaoCasa(codigoLimpo, hoje);
+      exibirAlertaSucesso(`Mensalidade de ${formatarReferenciaCurta(referencia)} gerada com sucesso!`);
+      if (typeof aoAtualizar === "function") await aoAtualizar(resumoAtualizado);
     } catch (erro) {
       elErroLancar.textContent = erro?.message || "Não foi possível gerar a mensalidade.";
       elErroLancar.hidden = false;
@@ -381,23 +341,48 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
     }
   });
 
-  elLista.addEventListener("click", async (evento) => {
+  elLista.addEventListener("click", (evento) => {
     const btnPagar = evento.target.closest("[data-pagar-mensalidade]");
     if (btnPagar) {
       const id = btnPagar.dataset.pagarMensalidade;
-      btnPagar.disabled = true;
-      try {
-        await updateDoc(doc(db, "pagamentos", id), {
-          status: STATUS_PAGAMENTO.PAGO,
-          dataPagamento: hoje,
-          pagoEm: serverTimestamp(),
-        });
-        await recarregarPagamentos();
-        await sincronizarSituacaoCasaComPagamentos(codigoLimpo, contratoAtivo, pagamentos, hoje);
-        if (typeof aoAtualizar === "function") await aoAtualizar();
-      } finally {
-        btnPagar.disabled = false;
-      }
+      const alvoPag = pagamentos.find((p) => p.id === id);
+      if (!alvoPag) return;
+
+      const mesExtenso = formatarReferenciaExtenso(alvoPag.referencia);
+      const valorFormatado = formatarMoeda(alvoPag.valor ?? 0);
+      const vencimentoFormatado = formatarDataBr(alvoPag.vencimento);
+      const estaAtrasado = classificarStatusMensalidade(alvoPag, hoje) === STATUS_PAGAMENTO.ATRASADO;
+
+      abrirModalRegistroPagamento({
+        titulo: "Registrar Pagamento",
+        mensagem: `${mesExtenso} (${formatarReferenciaCurta(alvoPag.referencia)}) • Vencimento: ${vencimentoFormatado} • Valor: ${valorFormatado}`,
+        aviso: estaAtrasado
+          ? "Este pagamento está em atraso. Ao confirmar o recebimento, a pendência será quitada e o imóvel volta para Alugada em dia."
+          : "Ao confirmar, o pagamento será registrado com a data informada e a situação do imóvel atualizada.",
+        dataPadrao: hoje,
+        rotuloConfirmar: "Confirmar Pagamento",
+        rotuloProcessando: "Registrando...",
+        rotuloCancelar: "Cancelar",
+        aoConfirmar: async (dataPagamentoEscolhida) => {
+          btnPagar.disabled = true;
+          try {
+            const resultado = await registrarPagamento(id, {
+              dataPagamento: dataPagamentoEscolhida,
+              hoje,
+            });
+            await recarregarPagamentos();
+            const dataBr = formatarDataBr(dataPagamentoEscolhida);
+            exibirAlertaSucesso(
+              `Pagamento de ${mesExtenso} registrado com sucesso em ${dataBr}! Situação do imóvel atualizada.`
+            );
+            if (typeof aoAtualizar === "function") {
+              await aoAtualizar(resultado?.resumoCasa);
+            }
+          } finally {
+            btnPagar.disabled = false;
+          }
+        },
+      });
       return;
     }
 
@@ -406,22 +391,28 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
       const id = btnReabrir.dataset.reabrirMensalidade;
       const alvoPag = pagamentos.find((p) => p.id === id);
       if (!alvoPag) return;
-      btnReabrir.disabled = true;
-      try {
-        const novoStatus = alvoPag.vencimento < hoje
-          ? STATUS_PAGAMENTO.ATRASADO
-          : STATUS_PAGAMENTO.PENDENTE;
-        await updateDoc(doc(db, "pagamentos", id), {
-          status: novoStatus,
-          dataPagamento: null,
-          pagoEm: null,
-        });
-        await recarregarPagamentos();
-        await sincronizarSituacaoCasaComPagamentos(codigoLimpo, contratoAtivo, pagamentos, hoje);
-        if (typeof aoAtualizar === "function") await aoAtualizar();
-      } finally {
-        btnReabrir.disabled = false;
-      }
+
+      const mesExtenso = formatarReferenciaExtenso(alvoPag.referencia);
+      abrirModalConfirmacao({
+        titulo: "Reabrir mensalidade?",
+        mensagem: `Deseja desfazer a baixa do pagamento de ${mesExtenso}? O status voltará a ser calculado conforme a data de vencimento.`,
+        rotuloConfirmar: "Sim, reabrir",
+        rotuloProcessando: "Reabrindo...",
+        rotuloCancelar: "Cancelar",
+        aoConfirmar: async () => {
+          btnReabrir.disabled = true;
+          try {
+            const resultado = await desfazerPagamento(id, hoje);
+            await recarregarPagamentos();
+            exibirAlertaSucesso(`Mensalidade de ${mesExtenso} reaberta com sucesso.`);
+            if (typeof aoAtualizar === "function") {
+              await aoAtualizar(resultado?.resumoCasa);
+            }
+          } finally {
+            btnReabrir.disabled = false;
+          }
+        },
+      });
     }
   });
 

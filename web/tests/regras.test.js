@@ -658,3 +658,62 @@ test("configuração do script e workflow de verificação diária de atrasos", 
   assert.match(workflowTexto, /workflow_dispatch:/);
   assert.match(workflowTexto, /node verificar-atrasos\.mjs/);
 });
+
+test("ação de registrar pagamento e reabertura de mensalidade com recálculo da situação da casa (#71)", () => {
+  const contrato = { id: "ctr-71", valorAluguel: 1500 };
+  const hoje = "2026-11-18";
+
+  // Mensalidade em atraso
+  const mensalidadeAtrasada = {
+    id: "ctr-71_2026-10",
+    contratoId: "ctr-71",
+    referencia: "2026-10",
+    vencimento: "2026-10-10",
+    valor: 1500,
+    status: STATUS_PAGAMENTO.ATRASADO,
+    dataPagamento: null,
+    pagoEm: null,
+  };
+
+  // Antes de pagar: casa está com status atrasada
+  let resumo = resumirSituacaoCasa(contrato, [mensalidadeAtrasada], hoje);
+  assert.equal(resumo.situacao, "atrasada");
+  assert.equal(resumo.aluguelAtrasado, true);
+  assert.equal(resumo.quantidadeAtrasos, 1);
+  assert.equal(resumo.diasAtraso, 39);
+
+  // Registra o pagamento na data escolhida
+  const dataPagamentoEscolhida = "2026-11-15";
+  const mensalidadePaga = {
+    ...mensalidadeAtrasada,
+    status: STATUS_PAGAMENTO.PAGO,
+    dataPagamento: dataPagamentoEscolhida,
+  };
+
+  // Status da mensalidade agora é pago
+  assert.equal(classificarStatusMensalidade(mensalidadePaga, hoje), STATUS_PAGAMENTO.PAGO);
+
+  // Após pagamento: casa volta para alugada sem atrasos
+  resumo = resumirSituacaoCasa(contrato, [mensalidadePaga], hoje);
+  assert.equal(resumo.situacao, "alugada");
+  assert.equal(resumo.aluguelAtrasado, false);
+  assert.equal(resumo.quantidadeAtrasos, 0);
+  assert.equal(resumo.valorAtrasado, 0);
+
+  // Reabre/desfaz pagamento: volta a calcular status pelo vencimento
+  const statusReaberto = mensalidadePaga.vencimento < hoje ? STATUS_PAGAMENTO.ATRASADO : STATUS_PAGAMENTO.PENDENTE;
+  const mensalidadeReaberta = {
+    ...mensalidadePaga,
+    status: statusReaberto,
+    dataPagamento: null,
+    pagoEm: null,
+  };
+  assert.equal(mensalidadeReaberta.status, STATUS_PAGAMENTO.ATRASADO);
+  assert.equal(classificarStatusMensalidade(mensalidadeReaberta, hoje), STATUS_PAGAMENTO.ATRASADO);
+
+  // Casa volta a ficar atrasada
+  resumo = resumirSituacaoCasa(contrato, [mensalidadeReaberta], hoje);
+  assert.equal(resumo.situacao, "atrasada");
+  assert.equal(resumo.aluguelAtrasado, true);
+});
+
