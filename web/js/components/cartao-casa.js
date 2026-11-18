@@ -69,13 +69,17 @@ function badgeSituacao(situacao, possuiPendencia) {
 
 function badgesPendencias(c, pendencias) {
   if (pendencias.length > 0) {
+    const dias = Number(c.diasAtraso || 0);
     return `<div class="cartao-casa__badges">
-      ${pendencias.map((p) => `
+      ${pendencias.map((p) => {
+        const textoRotulo = p.tipo === "aluguel" && dias > 0 ? `${p.rotulo} (${dias}d)` : p.rotulo;
+        return `
         <div class="badge-pagamento badge-pagamento--pendente">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12.5"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>${p.rotulo}</span>
+          <span>${textoRotulo}</span>
         </div>
-      `).join("")}
+      `;
+      }).join("")}
     </div>`;
   }
 

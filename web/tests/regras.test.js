@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import { gerarCodigoCasa, codigoDisponivel } from "../js/utils/codigo-casa.js";
 import {
   calcularSituacao, vencimentoDaReferencia, diasDeAtraso,
-  listarPendenciasCasa, temPendencia, ordenarCasasPorPrioridade,
+  formatarDiaMes, listarPendenciasCasa, temPendencia,
+  ordenarCasasPorPrioridade, resumirSituacaoCasa,
 } from "../js/utils/situacao.js";
 import {
   destinoSeguroPosLogin, normalizarPerfilUsuario, traduzirErroAuth, validarCredenciaisLogin,
@@ -538,5 +539,62 @@ test("geração e validação das mensalidades de cada contrato", () => {
   assert.throws(
     () => montarDadosMensalidade(contratoBase, "11/2026"),
     (e) => e.campo === "referencia"
+  );
+});
+
+test("resumo completo da situação da casa (vaga, alugada e atrasada com dias de atraso)", () => {
+  assert.equal(formatarDiaMes("2026-11-10"), "10/11");
+  assert.equal(formatarDiaMes("05/11/2026"), "05/11");
+
+  // Sem contrato ativo -> vaga
+  assert.deepEqual(resumirSituacaoCasa(null, [], "2026-11-18"), {
+    situacao: "vaga",
+    aluguelAtrasado: false,
+    quantidadeAtrasos: 0,
+    valorAtrasado: 0,
+    vencimentoMaisAntigo: null,
+    diasAtraso: 0,
+  });
+
+  const contrato = { id: "ctr-1", valorAluguel: 1200 };
+
+  // Mensalidade paga e mensalidade vencendo hoje -> alugada em dia
+  assert.deepEqual(
+    resumirSituacaoCasa(
+      contrato,
+      [
+        { status: "pago", vencimento: "2026-10-18", valor: 1200 },
+        { status: "pendente", vencimento: "2026-11-18", valor: 1200 },
+      ],
+      "2026-11-18"
+    ),
+    {
+      situacao: "alugada",
+      aluguelAtrasado: false,
+      quantidadeAtrasos: 0,
+      valorAtrasado: 0,
+      vencimentoMaisAntigo: null,
+      diasAtraso: 0,
+    }
+  );
+
+  // Duas mensalidades vencidas e não pagas -> atrasada, soma valores e calcula dias pelo vencimento mais antigo
+  assert.deepEqual(
+    resumirSituacaoCasa(
+      contrato,
+      [
+        { status: "atrasado", vencimento: "2026-11-10", valor: 1200 },
+        { status: "pendente", vencimento: "2026-10-10", valor: 1200 },
+      ],
+      "2026-11-18"
+    ),
+    {
+      situacao: "atrasada",
+      aluguelAtrasado: true,
+      quantidadeAtrasos: 2,
+      valorAtrasado: 2400,
+      vencimentoMaisAntigo: "2026-10-10",
+      diasAtraso: 39,
+    }
   );
 });
