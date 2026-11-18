@@ -14,7 +14,11 @@ import {
 import { db } from "./firebase.js";
 import { buscarCasa } from "./casas.js";
 import { buscarInquilino } from "./inquilinos.js";
-import { SITUACAO } from "../utils/situacao.js";
+import { SITUACAO, calcularSituacao, hojeISO } from "../utils/situacao.js";
+import {
+  listarReferenciasContrato,
+  montarDadosMensalidade,
+} from "../utils/validacao-pagamento.js";
 import {
   STATUS_CONTRATO,
   dataIsoValida,
@@ -108,6 +112,21 @@ export async function criarContrato(dados) {
 
   const refContrato = doc(contratos);
   const refCasa = doc(db, "casas", normalizado.casaId);
+  const hoje = hojeISO();
+  const contratoComId = {
+    id: refContrato.id,
+    ...normalizado,
+    inquilinoNome: inquilino.nomeCompleto,
+  };
+  const referencias = listarReferenciasContrato(normalizado.dataInicio, {
+    dataFim: normalizado.dataFim,
+    hoje,
+  });
+  const mensalidadesIniciais = referencias.map((referencia) =>
+    montarDadosMensalidade(contratoComId, referencia, hoje)
+  );
+  const situacaoInicial = calcularSituacao(contratoComId, mensalidadesIniciais, hoje);
+
   const batch = writeBatch(db);
 
   batch.set(refContrato, {
@@ -119,15 +138,24 @@ export async function criarContrato(dados) {
     atualizadoEm: serverTimestamp(),
   });
 
+  for (const mensalidade of mensalidadesIniciais) {
+    const { id: idPag, ...camposPag } = mensalidade;
+    batch.set(doc(db, "pagamentos", idPag), {
+      ...camposPag,
+      criadoEm: serverTimestamp(),
+      atualizadoEm: serverTimestamp(),
+    });
+  }
+
   batch.update(refCasa, {
     codigo: normalizado.casaId,
-    situacao: SITUACAO.ALUGADA,
+    situacao: situacaoInicial,
     contratoAtivoId: refContrato.id,
     inquilinoAtualId: inquilino.id,
     inquilinoNome: inquilino.nomeCompleto,
     inquilinoTelefone: inquilino.telefone || "",
     valorAluguel: normalizado.valorAluguel,
-    aluguelAtrasado: false,
+    aluguelAtrasado: situacaoInicial === SITUACAO.ATRASADA,
     atualizadoEm: serverTimestamp(),
   });
 
