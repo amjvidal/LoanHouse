@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import { gerarCodigoCasa, codigoDisponivel } from "../js/utils/codigo-casa.js";
 import {
   calcularSituacao, vencimentoDaReferencia, diasDeAtraso,
-  listarPendenciasCasa, temPendencia, ordenarCasasPorPrioridade,
+  formatarDiaMes, listarPendenciasCasa, temPendencia,
+  ordenarCasasPorPrioridade, resumirSituacaoCasa,
 } from "../js/utils/situacao.js";
 import {
   destinoSeguroPosLogin, normalizarPerfilUsuario, traduzirErroAuth, validarCredenciaisLogin,
@@ -32,10 +33,16 @@ import {
 } from "../js/utils/validacao-contrato.js";
 import {
   STATUS_PAGAMENTO,
+  adicionarMesesReferencia,
   classificarStatusMensalidade,
   construirMensalidadeContrato,
+  formatarReferenciaBr,
   formatarReferenciaCurta,
   formatarReferenciaExtenso,
+  idMensalidade,
+  listarReferenciasContrato,
+  montarDadosMensalidade,
+  ordenarMensalidades,
   ordenarMensalidadesPorReferencia,
   referenciaValida,
 } from "../js/utils/validacao-pagamento.js";
@@ -501,4 +508,153 @@ test("mensalidades de pagamento da casa (formatação, status e ordenação)", (
     { id: "m2", referencia: "2026-10" },
   ]);
   assert.deepEqual(ordenadas.map((m) => m.id), ["m3", "m2", "m1"]);
+});
+
+test("geração e validação das mensalidades de cada contrato", () => {
+  assert.equal(referenciaValida("2026-11"), true);
+  assert.equal(referenciaValida("2026-13"), false);
+  assert.equal(referenciaValida("2026-1"), false);
+  assert.equal(idMensalidade("ctr-01", "2026-11"), "ctr-01_2026-11");
+  assert.equal(formatarReferenciaBr("2026-11"), "Novembro/2026");
+  assert.equal(adicionarMesesReferencia("2026-11", 2), "2027-01");
+
+  // Lista referências desde o início do contrato até o mês atual
+  assert.deepEqual(
+    listarReferenciasContrato("2026-09-10", { hoje: "2026-11-18" }),
+    ["2026-09", "2026-10", "2026-11"]
+  );
+
+  // Respeita dataFim caso o contrato encerre antes
+  assert.deepEqual(
+    listarReferenciasContrato("2026-08-05", { dataFim: "2026-10-05", hoje: "2026-11-18" }),
+    ["2026-08", "2026-09", "2026-10"]
+  );
+
+  // Se dataInicio for no futuro, gera ao menos o mês inicial do contrato
+  assert.deepEqual(
+    listarReferenciasContrato("2026-12-01", { hoje: "2026-11-18" }),
+    ["2026-12"]
+  );
+
+  const contratoBase = {
+    id: "ctr-100",
+    casaId: "sao-123",
+    inquilinoId: "inq-55",
+    inquilinoNome: "Maria Aparecida",
+    valorAluguel: 1450.5,
+    diaVencimento: 31,
+  };
+
+  // Vencimento já passou -> nasce como "atrasado"
+  const mensalidadeOutubro = montarDadosMensalidade(contratoBase, "2026-10", "2026-11-18");
+  assert.deepEqual(mensalidadeOutubro, {
+    id: "ctr-100_2026-10",
+    contratoId: "ctr-100",
+    casaId: "SAO-123",
+    inquilinoId: "inq-55",
+    inquilinoNome: "Maria Aparecida",
+    referencia: "2026-10",
+    vencimento: "2026-10-31",
+    valor: 1450.5,
+    status: STATUS_PAGAMENTO.ATRASADO,
+    pagoEm: null,
+  });
+
+  // Mês curto (fevereiro) ajusta o dia 31 para 28 e vence no futuro -> "pendente"
+  const mensalidadeFevereiro = montarDadosMensalidade(contratoBase, "2027-02", "2026-11-18");
+  assert.equal(mensalidadeFevereiro.vencimento, "2027-02-28");
+  assert.equal(mensalidadeFevereiro.status, STATUS_PAGAMENTO.PENDENTE);
+
+  // Ordenação da mais recente para a mais antiga
+  const ordenadas = ordenarMensalidades([
+    { referencia: "2026-09" },
+    { referencia: "2026-11" },
+    { referencia: "2026-10" },
+  ]);
+  assert.deepEqual(
+    ordenadas.map((m) => m.referencia),
+    ["2026-11", "2026-10", "2026-09"]
+  );
+
+  assert.throws(
+    () => montarDadosMensalidade({ ...contratoBase, id: "" }, "2026-11"),
+    (e) => e.campo === "contratoId"
+  );
+  assert.throws(
+    () => montarDadosMensalidade(contratoBase, "11/2026"),
+    (e) => e.campo === "referencia"
+  );
+});
+
+test("resumo completo da situação da casa (vaga, alugada e atrasada com dias de atraso)", () => {
+  assert.equal(formatarDiaMes("2026-11-10"), "10/11");
+  assert.equal(formatarDiaMes("05/11/2026"), "05/11");
+
+  // Sem contrato ativo -> vaga
+  assert.deepEqual(resumirSituacaoCasa(null, [], "2026-11-18"), {
+    situacao: "vaga",
+    aluguelAtrasado: false,
+    quantidadeAtrasos: 0,
+    valorAtrasado: 0,
+    vencimentoMaisAntigo: null,
+    diasAtraso: 0,
+  });
+
+  const contrato = { id: "ctr-1", valorAluguel: 1200 };
+
+  // Mensalidade paga e mensalidade vencendo hoje -> alugada em dia
+  assert.deepEqual(
+    resumirSituacaoCasa(
+      contrato,
+      [
+        { status: "pago", vencimento: "2026-10-18", valor: 1200 },
+        { status: "pendente", vencimento: "2026-11-18", valor: 1200 },
+      ],
+      "2026-11-18"
+    ),
+    {
+      situacao: "alugada",
+      aluguelAtrasado: false,
+      quantidadeAtrasos: 0,
+      valorAtrasado: 0,
+      vencimentoMaisAntigo: null,
+      diasAtraso: 0,
+    }
+  );
+
+  // Duas mensalidades vencidas e não pagas -> atrasada, soma valores e calcula dias pelo vencimento mais antigo
+  assert.deepEqual(
+    resumirSituacaoCasa(
+      contrato,
+      [
+        { status: "atrasado", vencimento: "2026-11-10", valor: 1200 },
+        { status: "pendente", vencimento: "2026-10-10", valor: 1200 },
+      ],
+      "2026-11-18"
+    ),
+    {
+      situacao: "atrasada",
+      aluguelAtrasado: true,
+      quantidadeAtrasos: 2,
+      valorAtrasado: 2400,
+      vencimentoMaisAntigo: "2026-10-10",
+      diasAtraso: 39,
+    }
+  );
+});
+
+test("configuração do script e workflow de verificação diária de atrasos", () => {
+  const urlScript = new URL("../../scripts/atrasos/verificar-atrasos.mjs", import.meta.url);
+  const urlWorkflow = new URL("../../.github/workflows/verificar-atrasos.yml", import.meta.url);
+
+  const scriptTexto = readFileSync(urlScript, "utf8");
+  const workflowTexto = readFileSync(urlWorkflow, "utf8");
+
+  assert.match(scriptTexto, /listarReferenciasContrato/);
+  assert.match(scriptTexto, /montarDadosMensalidade/);
+  assert.match(scriptTexto, /resumirSituacaoCasa/);
+  assert.match(scriptTexto, /diasAtraso:\s*resumo\.diasAtraso/);
+  assert.match(workflowTexto, /cron:\s*"0 9 \* \* \*"/);
+  assert.match(workflowTexto, /workflow_dispatch:/);
+  assert.match(workflowTexto, /node verificar-atrasos\.mjs/);
 });

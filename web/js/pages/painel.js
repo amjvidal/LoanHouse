@@ -1,8 +1,14 @@
 import { exigirLogin } from "../services/auth.js";
 import { montarMenu } from "../components/menu.js";
 import { listarCasas } from "../services/casas.js";
+import { sincronizarSituacaoCasas } from "../services/pagamentos.js";
 import { linkWhatsApp, mensagemCobranca } from "../services/whatsapp.js";
-import { temPendencia, listarPendenciasCasa, ordenarCasasPorPrioridade } from "../utils/situacao.js";
+import {
+  formatarDiaMes,
+  listarPendenciasCasa,
+  ordenarCasasPorPrioridade,
+  temPendencia,
+} from "../utils/situacao.js";
 import { formatarMoeda, preencherCabecalhoUsuario, renderizarCardCasa } from "../components/cartao-casa.js";
 
 function renderizarAlertaPendencias(comPendencia) {
@@ -18,18 +24,27 @@ function renderizarAlertaPendencias(comPendencia) {
   secaoAlertas.hidden = false;
   const atrasadasAluguel = comPendencia.filter((c) => listarPendenciasCasa(c).some((p) => p.tipo === "aluguel"));
   const listaBase = atrasadasAluguel.length ? atrasadasAluguel : comPendencia;
-  const totalValor = listaBase.reduce((acc, c) => acc + Number(c.valorAluguel ?? c.valor ?? 0), 0);
+  const totalValor = listaBase.reduce(
+    (acc, c) => acc + Number(c.valorAtrasado || c.valorAluguel || c.valor || 0),
+    0
+  );
   const qtdTexto = comPendencia.length === 1
     ? "1 imóvel com pendência"
     : `${comPendencia.length} imóveis com pendências`;
   const primeira = listaBase[0];
-  const vencimento = primeira.vencimentoAtrasado || "05/11/2026";
+  const diaMesVencimento = formatarDiaMes(primeira.vencimentoAtrasado);
   const resumoCodigos = comPendencia.map((c) => {
-    const tipos = listarPendenciasCasa(c).map((p) => p.rotulo).join(", ");
+    const dias = Number(c.diasAtraso || 0);
+    const tipos = listarPendenciasCasa(c).map((p) => {
+      if (p.tipo === "aluguel" && dias > 0) {
+        return `${p.rotulo} — ${dias} ${dias === 1 ? "dia de atraso" : "dias de atraso"}`;
+      }
+      return p.rotulo;
+    }).join(", ");
     return `${c.codigo} (${tipos})`;
   }).join(" • ");
 
-  const msg = mensagemCobranca(primeira.inquilinoNome || "Inquilino", primeira.codigo, vencimento.slice(0, 5));
+  const msg = mensagemCobranca(primeira.inquilinoNome || "Inquilino", primeira.codigo, diaMesVencimento);
   const hrefWhats = linkWhatsApp(primeira.inquilinoTelefone || "", msg);
 
   secaoAlertas.innerHTML = `
@@ -63,7 +78,8 @@ preencherCabecalhoUsuario();
 exigirLogin(async (usuario) => {
   preencherCabecalhoUsuario(usuario);
 
-  const casas = ordenarCasasPorPrioridade(await listarCasas());
+  const casasSincronizadas = await sincronizarSituacaoCasas(await listarCasas());
+  const casas = ordenarCasasPorPrioridade(casasSincronizadas);
   const comPendencia = casas.filter((c) => temPendencia(c));
   const emDia = casas.filter((c) => !temPendencia(c) && c.situacao === "alugada");
   const vagas = casas.filter((c) => !temPendencia(c) && c.situacao !== "alugada");
