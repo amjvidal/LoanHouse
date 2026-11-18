@@ -11,6 +11,7 @@ import { preencherCabecalhoUsuario } from "../components/cartao-casa.js";
 import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
 import { montarSecaoContrato } from "../components/secao-contrato.js";
 import { montarSecaoHistoricoCasa } from "../components/secao-historico-casa.js";
+import { montarSecaoPagamentosCasa } from "../components/secao-pagamentos-casa.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -371,6 +372,7 @@ exigirLogin(async (usuario) => {
     atualizarCabecalhoCasa();
     await Promise.all([
       montarSecaoContrato("[data-secao-contrato]"),
+      montarSecaoPagamentosCasa("[data-secao-pagamentos]"),
       montarSecaoHistoricoCasa("[data-secao-historico]"),
     ]);
     return;
@@ -409,24 +411,38 @@ exigirLogin(async (usuario) => {
   atualizarDestaqueNumero();
   atualizarCabecalhoCasa();
 
+  async function sincronizarEstadoCasaDoBanco() {
+    const atualizada = await buscarCasa(codigoUrl);
+    if (!atualizada) return;
+    form.situacao.value = atualizada.situacao || "alugada";
+    form.inquilinoNome.value = atualizada.inquilinoNome || "";
+    sincronizarAtalhoInquilino(atualizada);
+    if (atualizada.valorAluguel !== undefined) {
+      form.valorAluguel.value = atualizada.valorAluguel;
+    }
+    estadoContas.aluguelPago = !(atualizada.situacao === "atrasada" || atualizada.aluguelAtrasado === true);
+    sincronizarBotoesToggle();
+    atualizarCabecalhoCasa();
+  }
+
   await Promise.all([
     montarSecaoContrato("[data-secao-contrato]", {
       codigoCasa: codigoUrl,
       casa,
       aoAtualizar: async () => {
-        const atualizada = await buscarCasa(codigoUrl);
-        if (!atualizada) return;
-        form.situacao.value = atualizada.situacao || "alugada";
-        form.inquilinoNome.value = atualizada.inquilinoNome || "";
-        sincronizarAtalhoInquilino(atualizada);
-        if (atualizada.valorAluguel !== undefined) {
-          form.valorAluguel.value = atualizada.valorAluguel;
-        }
-        estadoContas.aluguelPago = !(atualizada.situacao === "atrasada" || atualizada.aluguelAtrasado === true);
-        sincronizarBotoesToggle();
-        atualizarCabecalhoCasa();
-        await montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl);
+        await sincronizarEstadoCasaDoBanco();
+        await Promise.all([
+          montarSecaoPagamentosCasa("[data-secao-pagamentos]", {
+            codigoCasa: codigoUrl,
+            aoAtualizar: sincronizarEstadoCasaDoBanco,
+          }),
+          montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl),
+        ]);
       },
+    }),
+    montarSecaoPagamentosCasa("[data-secao-pagamentos]", {
+      codigoCasa: codigoUrl,
+      aoAtualizar: sincronizarEstadoCasaDoBanco,
     }),
     montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl),
   ]);

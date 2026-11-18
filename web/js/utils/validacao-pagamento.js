@@ -1,5 +1,5 @@
-// Regras puras para geração, cálculo e validação de mensalidades (coleção pagamentos).
-import { hojeISO, vencimentoDaReferencia } from "./situacao.js";
+// Regras puras para geração, cálculo, formatação e validação de mensalidades (coleção pagamentos).
+import { hojeISO, mensalidadeAtrasada, vencimentoDaReferencia } from "./situacao.js";
 
 export const STATUS_PAGAMENTO = Object.freeze({
   PENDENTE: "pendente",
@@ -8,18 +8,8 @@ export const STATUS_PAGAMENTO = Object.freeze({
 });
 
 const NOMES_MESES = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
 function erro(campo, mensagem) {
@@ -30,6 +20,28 @@ function erro(campo, mensagem) {
 
 export function referenciaValida(referencia) {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(referencia ?? "").trim());
+}
+
+export function formatarReferenciaBr(referencia) {
+  const refLimpa = String(referencia ?? "").trim();
+  if (!referenciaValida(refLimpa)) return refLimpa || "—";
+  const [ano, mes] = refLimpa.split("-").map(Number);
+  return `${NOMES_MESES[mes - 1]}/${ano}`;
+}
+
+export function formatarReferenciaCurta(referencia) {
+  const texto = String(referencia ?? "").trim();
+  if (!referenciaValida(texto)) return texto || "—";
+  const [ano, mes] = texto.split("-");
+  return `${mes}/${ano}`;
+}
+
+export function formatarReferenciaExtenso(referencia) {
+  const texto = String(referencia ?? "").trim();
+  if (!referenciaValida(texto)) return texto || "Mês não informado";
+  const [ano, mes] = texto.split("-").map(Number);
+  const nomeMes = NOMES_MESES[mes - 1] || String(mes);
+  return `${nomeMes} de ${ano}`;
 }
 
 export function idMensalidade(contratoId, referencia) {
@@ -44,12 +56,7 @@ export function idMensalidade(contratoId, referencia) {
   return `${idLimpo}_${refLimpa}`;
 }
 
-export function formatarReferenciaBr(referencia) {
-  const refLimpa = String(referencia ?? "").trim();
-  if (!referenciaValida(refLimpa)) return refLimpa || "—";
-  const [ano, mes] = refLimpa.split("-").map(Number);
-  return `${NOMES_MESES[mes - 1]}/${ano}`;
-}
+export const montarIdMensalidade = idMensalidade;
 
 export function adicionarMesesReferencia(referencia, meses = 1) {
   const refLimpa = String(referencia ?? "").trim();
@@ -96,6 +103,16 @@ export function listarReferenciasContrato(
     seguranca++;
   }
   return referencias;
+}
+
+export function classificarStatusMensalidade(pagamento = {}, hoje = hojeISO()) {
+  if (pagamento?.status === STATUS_PAGAMENTO.PAGO) {
+    return STATUS_PAGAMENTO.PAGO;
+  }
+  if (pagamento?.status === STATUS_PAGAMENTO.ATRASADO || mensalidadeAtrasada(pagamento, hoje)) {
+    return STATUS_PAGAMENTO.ATRASADO;
+  }
+  return STATUS_PAGAMENTO.PENDENTE;
 }
 
 export function montarDadosMensalidade(contrato = {}, referencia, hoje = hojeISO()) {
@@ -150,8 +167,14 @@ export function montarDadosMensalidade(contrato = {}, referencia, hoje = hojeISO
   };
 }
 
+export const construirMensalidadeContrato = montarDadosMensalidade;
+
 export function ordenarMensalidades(mensalidades = []) {
-  return [...mensalidades].sort((a, b) =>
-    String(b?.referencia ?? "").localeCompare(String(a?.referencia ?? ""))
-  );
+  return [...mensalidades].sort((a, b) => {
+    const cmpRef = String(b?.referencia ?? "").localeCompare(String(a?.referencia ?? ""));
+    if (cmpRef !== 0) return cmpRef;
+    return String(b?.vencimento ?? "").localeCompare(String(a?.vencimento ?? ""));
+  });
 }
+
+export const ordenarMensalidadesPorReferencia = ordenarMensalidades;

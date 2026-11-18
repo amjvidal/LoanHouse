@@ -1091,6 +1091,64 @@ input:focus, select:focus, textarea:focus {
   color: #334155;
 }
 
+/* Seção de Pagamentos do Aluguel na Casa (#70, #71) */
+.resumo-pagamentos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.resumo-pagamentos__item {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.resumo-pagamentos__item--pago {
+  background: #f0f9f2;
+  border-color: #c8e6cf;
+  color: #2e6b3e;
+}
+.resumo-pagamentos__item--pendente {
+  background: #f8fafc;
+  border-color: #dbe2ea;
+  color: #334155;
+}
+.resumo-pagamentos__item--atrasado {
+  background: #fef2f2;
+  border-color: #f3c4c4;
+  color: #9c2b2b;
+}
+.resumo-pagamentos__rotulo {
+  font-size: 14px;
+  font-weight: 600;
+}
+.resumo-pagamentos__valor {
+  font-family: "Outfit", "Inter", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+.cartao-pagamento__ref {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cor-texto-suave);
+}
+.cartao-pagamento__icone--pago {
+  background: #e6f4ea;
+  color: #2e6b3e;
+}
+.cartao-pagamento__icone--atrasado {
+  background: #fdecea;
+  color: #9c2b2b;
+}
+.cartao-pagamento__icone--pendente {
+  background: #e8f1fa;
+  color: var(--cor-primaria);
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
   .grade-casas-continua,
@@ -1100,7 +1158,8 @@ input:focus, select:focus, textarea:focus {
   .grade-campos--4col,
   .grade-campos--3col,
   .cartao-contrato__grade,
-  .ficha-inquilino-atalhos {
+  .ficha-inquilino-atalhos,
+  .resumo-pagamentos {
     grid-template-columns: 1fr;
   }
 }
