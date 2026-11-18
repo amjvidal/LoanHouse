@@ -598,3 +598,19 @@ test("resumo completo da situação da casa (vaga, alugada e atrasada com dias d
     }
   );
 });
+
+test("configuração do script e workflow de verificação diária de atrasos", () => {
+  const urlScript = new URL("../../scripts/atrasos/verificar-atrasos.mjs", import.meta.url);
+  const urlWorkflow = new URL("../../.github/workflows/verificar-atrasos.yml", import.meta.url);
+
+  const scriptTexto = readFileSync(urlScript, "utf8");
+  const workflowTexto = readFileSync(urlWorkflow, "utf8");
+
+  assert.match(scriptTexto, /listarReferenciasContrato/);
+  assert.match(scriptTexto, /montarDadosMensalidade/);
+  assert.match(scriptTexto, /resumirSituacaoCasa/);
+  assert.match(scriptTexto, /diasAtraso:\s*resumo\.diasAtraso/);
+  assert.match(workflowTexto, /cron:\s*"0 9 \* \* \*"/);
+  assert.match(workflowTexto, /workflow_dispatch:/);
+  assert.match(workflowTexto, /node verificar-atrasos\.mjs/);
+});

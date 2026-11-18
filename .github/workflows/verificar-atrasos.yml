@@ -7,9 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       simular:
-        description: "Só mostrar o que mudaria, sem gravar"
+        description: "Só mostrar o que mudaria, sem gravar no Firestore"
         type: boolean
-        default: true
+        default: false
+      data_referencia:
+        description: "Data de referência opcional (AAAA-MM-DD). Vazio usa hoje em Recife"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   verificar:
@@ -23,7 +28,17 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - name: Verificar
+      - name: Verificar atrasos e atualizar situação das casas
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node verificar-atrasos.mjs ${{ inputs.simular && '--simular' || '' }}
+          DATA_REFERENCIA: ${{ inputs.data_referencia }}
+          MODO_SIMULAR: ${{ inputs.simular }}
+        run: |
+          ARGS=""
+          if [ "$MODO_SIMULAR" = "true" ]; then
+            ARGS="$ARGS --simular"
+          fi
+          if [ -n "$DATA_REFERENCIA" ]; then
+            ARGS="$ARGS --hoje=$DATA_REFERENCIA"
+          fi
+          node verificar-atrasos.mjs $ARGS
