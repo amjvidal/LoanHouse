@@ -28,10 +28,67 @@ export function diasDeAtraso(vencimentoISO, hoje = hojeISO()) {
   return Math.max(0, Math.round(ms / 86400000));
 }
 
+export function formatarDiaMes(dataTexto) {
+  const texto = String(dataTexto ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+    const [, mes, dia] = texto.split("-");
+    return `${dia}/${mes}`;
+  }
+  if (/^\d{2}\/\d{2}(\/\d{4})?$/.test(texto)) {
+    return texto.slice(0, 5);
+  }
+  return "05/11";
+}
+
 // contratoAtivo: objeto do contrato ou null. pagamentos: mensalidades desse contrato.
 export function calcularSituacao(contratoAtivo, pagamentos = [], hoje = hojeISO()) {
   if (!contratoAtivo) return SITUACAO.VAGA;
   return pagamentos.some((p) => mensalidadeAtrasada(p, hoje)) ? SITUACAO.ATRASADA : SITUACAO.ALUGADA;
+}
+
+// Resume a situação da casa e os dados de atraso (quantidade, valor total, vencimento mais antigo e dias de atraso).
+export function resumirSituacaoCasa(contratoAtivo, pagamentos = [], hoje = hojeISO()) {
+  if (!contratoAtivo) {
+    return {
+      situacao: SITUACAO.VAGA,
+      aluguelAtrasado: false,
+      quantidadeAtrasos: 0,
+      valorAtrasado: 0,
+      vencimentoMaisAntigo: null,
+      diasAtraso: 0,
+    };
+  }
+
+  const atrasadas = pagamentos
+    .filter((p) => p && mensalidadeAtrasada(p, hoje))
+    .sort((a, b) => String(a.vencimento || "").localeCompare(String(b.vencimento || "")));
+
+  if (!atrasadas.length) {
+    return {
+      situacao: SITUACAO.ALUGADA,
+      aluguelAtrasado: false,
+      quantidadeAtrasos: 0,
+      valorAtrasado: 0,
+      vencimentoMaisAntigo: null,
+      diasAtraso: 0,
+    };
+  }
+
+  const valorPadrao = Number(contratoAtivo.valorAluguel ?? contratoAtivo.valor ?? 0);
+  const somaAtrasada = atrasadas.reduce((acc, p) => {
+    const valor = Number(p.valor ?? valorPadrao);
+    return acc + (Number.isFinite(valor) ? valor : 0);
+  }, 0);
+  const vencimentoMaisAntigo = String(atrasadas[0].vencimento || "").trim() || null;
+
+  return {
+    situacao: SITUACAO.ATRASADA,
+    aluguelAtrasado: true,
+    quantidadeAtrasos: atrasadas.length,
+    valorAtrasado: Math.round(somaAtrasada * 100) / 100,
+    vencimentoMaisAntigo,
+    diasAtraso: vencimentoMaisAntigo ? diasDeAtraso(vencimentoMaisAntigo, hoje) : 0,
+  };
 }
 
 const ROTULOS_PENDENCIA = {

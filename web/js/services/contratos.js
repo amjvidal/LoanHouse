@@ -14,7 +14,7 @@ import {
 import { db } from "./firebase.js";
 import { buscarCasa } from "./casas.js";
 import { buscarInquilino } from "./inquilinos.js";
-import { SITUACAO, calcularSituacao, hojeISO } from "../utils/situacao.js";
+import { SITUACAO, hojeISO, resumirSituacaoCasa } from "../utils/situacao.js";
 import {
   listarReferenciasContrato,
   montarDadosMensalidade,
@@ -125,7 +125,7 @@ export async function criarContrato(dados) {
   const mensalidadesIniciais = referencias.map((referencia) =>
     montarDadosMensalidade(contratoComId, referencia, hoje)
   );
-  const situacaoInicial = calcularSituacao(contratoComId, mensalidadesIniciais, hoje);
+  const resumoInicial = resumirSituacaoCasa(contratoComId, mensalidadesIniciais, hoje);
 
   const batch = writeBatch(db);
 
@@ -149,13 +149,17 @@ export async function criarContrato(dados) {
 
   batch.update(refCasa, {
     codigo: normalizado.casaId,
-    situacao: situacaoInicial,
+    situacao: resumoInicial.situacao,
     contratoAtivoId: refContrato.id,
     inquilinoAtualId: inquilino.id,
     inquilinoNome: inquilino.nomeCompleto,
     inquilinoTelefone: inquilino.telefone || "",
     valorAluguel: normalizado.valorAluguel,
-    aluguelAtrasado: situacaoInicial === SITUACAO.ATRASADA,
+    aluguelAtrasado: resumoInicial.aluguelAtrasado,
+    diasAtraso: resumoInicial.diasAtraso,
+    vencimentoAtrasado: resumoInicial.vencimentoMaisAntigo,
+    quantidadeAtrasos: resumoInicial.quantidadeAtrasos,
+    valorAtrasado: resumoInicial.valorAtrasado,
     atualizadoEm: serverTimestamp(),
   });
 
@@ -206,6 +210,10 @@ export async function encerrarContrato(contratoId, dados = {}) {
       inquilinoNome: null,
       inquilinoTelefone: null,
       aluguelAtrasado: false,
+      diasAtraso: 0,
+      vencimentoAtrasado: null,
+      quantidadeAtrasos: 0,
+      valorAtrasado: 0,
       atualizadoEm: serverTimestamp(),
     });
   }

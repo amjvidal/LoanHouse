@@ -1,5 +1,5 @@
-// Mensalidades e registro de pagamento (coleção pagamentos).
-// Task no GitHub: "Gerar as mensalidades de cada contrato" (#69).
+// Mensalidades, registro de pagamento e recálculo da situação da casa (coleção pagamentos).
+// Tasks no GitHub: "Gerar as mensalidades de cada contrato" (#69) e "Criar o cálculo da situação da casa" (#74).
 import {
   collection,
   doc,
@@ -14,7 +14,17 @@ import {
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { db } from "./firebase.js";
-import { hojeISO, mensalidadeAtrasada } from "../utils/situacao.js";
+import { buscarCasa, listarCasas } from "./casas.js";
+import { buscarContratoAtivoDaCasa } from "./contratos.js";
+import {
+  SITUACAO,
+  calcularSituacao,
+  diasDeAtraso,
+  formatarDiaMes,
+  hojeISO,
+  mensalidadeAtrasada,
+  resumirSituacaoCasa,
+} from "../utils/situacao.js";
 import {
   STATUS_PAGAMENTO,
   adicionarMesesReferencia,
@@ -27,14 +37,19 @@ import {
 } from "../utils/validacao-pagamento.js";
 
 export {
+  SITUACAO,
   STATUS_PAGAMENTO,
   adicionarMesesReferencia,
+  calcularSituacao,
+  diasDeAtraso,
+  formatarDiaMes,
   formatarReferenciaBr,
   idMensalidade,
   listarReferenciasContrato,
   montarDadosMensalidade,
   ordenarMensalidades,
   referenciaValida,
+  resumirSituacaoCasa,
 };
 
 const pagamentos = collection(db, "pagamentos");
@@ -148,7 +163,101 @@ export async function gerarMensalidadesContrato(contratoOuId, opcoes = {}) {
   return ordenarMensalidades(resultado);
 }
 
-export async function registrarPagamento(pagamentoId) {
+export async function recalcularSituacaoCasa(casaId, hoje = hojeISO()) {
+  const codigoLimpo = String(casaId ?? "").trim().toUpperCase();
+  if (!codigoLimpo) {
+    throw new Error("Código do imóvel inválido para recalcular a situação.");
+  }
+
+  const [casa, contratoAtivo] = await Promise.all([
+    buscarCasa(codigoLimpo),
+    buscarContratoAtivoDaCasa(codigoLimpo),
+  ]);
+
+  if (!casa) {
+    return resumirSituacaoCasa(null, [], hoje);
+  }
+
+  if (!contratoAtivo) {
+    const resumoVago = resumirSituacaoCasa(null, [], hoje);
+    if (casa.situacao !== SITUACAO.VAGA || casa.aluguelAtrasado || casa.contratoAtivoId) {
+      await updateDoc(doc(db, "casas", codigoLimpo), {
+        codigo: codigoLimpo,
+        situacao: SITUACAO.VAGA,
+        contratoAtivoId: null,
+        inquilinoAtualId: null,
+        inquilinoNome: null,
+        inquilinoTelefone: null,
+        aluguelAtrasado: false,
+        diasAtraso: 0,
+        vencimentoAtrasado: null,
+        quantidadeAtrasos: 0,
+        valorAtrasado: 0,
+        atualizadoEm: serverTimestamp(),
+      });
+    }
+    return resumoVago;
+  }
+
+  const mensalidades = await gerarMensalidadesContrato(contratoAtivo, { hoje });
+  const resumo = resumirSituacaoCasa(contratoAtivo, mensalidades, hoje);
+
+  const mudouEstado =
+    casa.situacao !== resumo.situacao ||
+    Boolean(casa.aluguelAtrasado) !== resumo.aluguelAtrasado ||
+    Number(casa.diasAtraso || 0) !== resumo.diasAtraso ||
+    (casa.vencimentoAtrasado || null) !== resumo.vencimentoMaisAntigo ||
+    Number(casa.quantidadeAtrasos || 0) !== resumo.quantidadeAtrasos ||
+    Number(casa.valorAtrasado || 0) !== resumo.valorAtrasado;
+
+  if (mudouEstado) {
+    await updateDoc(doc(db, "casas", codigoLimpo), {
+      codigo: codigoLimpo,
+      situacao: resumo.situacao,
+      aluguelAtrasado: resumo.aluguelAtrasado,
+      diasAtraso: resumo.diasAtraso,
+      vencimentoAtrasado: resumo.vencimentoMaisAntigo,
+      quantidadeAtrasos: resumo.quantidadeAtrasos,
+      valorAtrasado: resumo.valorAtrasado,
+      atualizadoEm: serverTimestamp(),
+    });
+  }
+
+  return resumo;
+}
+
+export async function sincronizarSituacaoCasas(listaCasas = null, hoje = hojeISO()) {
+  const casasBase = Array.isArray(listaCasas) ? listaCasas : await listarCasas();
+  return Promise.all(
+    casasBase.map(async (casa) => {
+      const possuiContratoOuAluguel =
+        Boolean(casa.contratoAtivoId) ||
+        casa.situacao === SITUACAO.ALUGADA ||
+        casa.situacao === SITUACAO.ATRASADA;
+
+      if (!possuiContratoOuAluguel) {
+        return casa;
+      }
+
+      try {
+        const resumo = await recalcularSituacaoCasa(casa.codigo, hoje);
+        return {
+          ...casa,
+          situacao: resumo.situacao,
+          aluguelAtrasado: resumo.aluguelAtrasado,
+          diasAtraso: resumo.diasAtraso,
+          vencimentoAtrasado: resumo.vencimentoMaisAntigo,
+          quantidadeAtrasos: resumo.quantidadeAtrasos,
+          valorAtrasado: resumo.valorAtrasado,
+        };
+      } catch {
+        return casa;
+      }
+    })
+  );
+}
+
+export async function registrarPagamento(pagamentoId, hoje = hojeISO()) {
   const idLimpo = String(pagamentoId ?? "").trim();
   if (!idLimpo) {
     throw new Error("ID da mensalidade inválido para registrar pagamento.");
@@ -162,7 +271,12 @@ export async function registrarPagamento(pagamentoId) {
     pagoEm: serverTimestamp(),
     atualizadoEm: serverTimestamp(),
   });
-  return { ...pagamento, status: STATUS_PAGAMENTO.PAGO };
+
+  const resumoCasa = pagamento.casaId
+    ? await recalcularSituacaoCasa(pagamento.casaId, hoje)
+    : null;
+
+  return { ...pagamento, status: STATUS_PAGAMENTO.PAGO, resumoCasa };
 }
 
 export async function desfazerPagamento(pagamentoId, hoje = hojeISO()) {
@@ -181,5 +295,10 @@ export async function desfazerPagamento(pagamentoId, hoje = hojeISO()) {
     pagoEm: null,
     atualizadoEm: serverTimestamp(),
   });
-  return { ...pagamento, status: novoStatus, pagoEm: null };
+
+  const resumoCasa = pagamento.casaId
+    ? await recalcularSituacaoCasa(pagamento.casaId, hoje)
+    : null;
+
+  return { ...pagamento, status: novoStatus, pagoEm: null, resumoCasa };
 }

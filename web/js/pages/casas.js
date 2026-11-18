@@ -2,6 +2,7 @@
 import { exigirLogin } from "../services/auth.js";
 import { montarMenu } from "../components/menu.js";
 import { listarCasas } from "../services/casas.js";
+import { sincronizarSituacaoCasas } from "../services/pagamentos.js";
 import { temPendencia, ordenarCasasPorPrioridade } from "../utils/situacao.js";
 import { preencherCabecalhoUsuario, renderizarCardCasa } from "../components/cartao-casa.js";
 
@@ -11,7 +12,8 @@ preencherCabecalhoUsuario();
 exigirLogin(async (usuario) => {
   preencherCabecalhoUsuario(usuario);
 
-  const casas = ordenarCasasPorPrioridade(await listarCasas());
+  const casasSincronizadas = await sincronizarSituacaoCasas(await listarCasas());
+  const casas = ordenarCasasPorPrioridade(casasSincronizadas);
   const comPendencia = casas.filter((c) => temPendencia(c));
   const emDia = casas.filter((c) => !temPendencia(c) && c.situacao === "alugada");
   const vagas = casas.filter((c) => !temPendencia(c) && c.situacao !== "alugada");
