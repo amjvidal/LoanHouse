@@ -30,6 +30,16 @@ import {
   validarContrato,
   validarEncerramentoContrato,
 } from "../js/utils/validacao-contrato.js";
+import {
+  STATUS_PAGAMENTO,
+  adicionarMesesReferencia,
+  formatarReferenciaBr,
+  idMensalidade,
+  listarReferenciasContrato,
+  montarDadosMensalidade,
+  ordenarMensalidades,
+  referenciaValida,
+} from "../js/utils/validacao-pagamento.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -453,4 +463,80 @@ test("regras e índices do Firestore para as coleções do sistema", () => {
   assert.equal(assinaturas.includes("contratos:casaId_ASCENDING+status_ASCENDING"), true);
   assert.equal(assinaturas.includes("pagamentos:casaId_ASCENDING+referencia_DESCENDING"), true);
   assert.equal(assinaturas.includes("pagamentos:status_ASCENDING+vencimento_ASCENDING"), true);
+});
+
+test("geração e validação das mensalidades de cada contrato", () => {
+  assert.equal(referenciaValida("2026-11"), true);
+  assert.equal(referenciaValida("2026-13"), false);
+  assert.equal(referenciaValida("2026-1"), false);
+  assert.equal(idMensalidade("ctr-01", "2026-11"), "ctr-01_2026-11");
+  assert.equal(formatarReferenciaBr("2026-11"), "Novembro/2026");
+  assert.equal(adicionarMesesReferencia("2026-11", 2), "2027-01");
+
+  // Lista referências desde o início do contrato até o mês atual
+  assert.deepEqual(
+    listarReferenciasContrato("2026-09-10", { hoje: "2026-11-18" }),
+    ["2026-09", "2026-10", "2026-11"]
+  );
+
+  // Respeita dataFim caso o contrato encerre antes
+  assert.deepEqual(
+    listarReferenciasContrato("2026-08-05", { dataFim: "2026-10-05", hoje: "2026-11-18" }),
+    ["2026-08", "2026-09", "2026-10"]
+  );
+
+  // Se dataInicio for no futuro, gera ao menos o mês inicial do contrato
+  assert.deepEqual(
+    listarReferenciasContrato("2026-12-01", { hoje: "2026-11-18" }),
+    ["2026-12"]
+  );
+
+  const contratoBase = {
+    id: "ctr-100",
+    casaId: "sao-123",
+    inquilinoId: "inq-55",
+    inquilinoNome: "Maria Aparecida",
+    valorAluguel: 1450.5,
+    diaVencimento: 31,
+  };
+
+  // Vencimento já passou -> nasce como "atrasado"
+  const mensalidadeOutubro = montarDadosMensalidade(contratoBase, "2026-10", "2026-11-18");
+  assert.deepEqual(mensalidadeOutubro, {
+    id: "ctr-100_2026-10",
+    contratoId: "ctr-100",
+    casaId: "SAO-123",
+    inquilinoId: "inq-55",
+    inquilinoNome: "Maria Aparecida",
+    referencia: "2026-10",
+    vencimento: "2026-10-31",
+    valor: 1450.5,
+    status: STATUS_PAGAMENTO.ATRASADO,
+    pagoEm: null,
+  });
+
+  // Mês curto (fevereiro) ajusta o dia 31 para 28 e vence no futuro -> "pendente"
+  const mensalidadeFevereiro = montarDadosMensalidade(contratoBase, "2027-02", "2026-11-18");
+  assert.equal(mensalidadeFevereiro.vencimento, "2027-02-28");
+  assert.equal(mensalidadeFevereiro.status, STATUS_PAGAMENTO.PENDENTE);
+
+  // Ordenação da mais recente para a mais antiga
+  const ordenadas = ordenarMensalidades([
+    { referencia: "2026-09" },
+    { referencia: "2026-11" },
+    { referencia: "2026-10" },
+  ]);
+  assert.deepEqual(
+    ordenadas.map((m) => m.referencia),
+    ["2026-11", "2026-10", "2026-09"]
+  );
+
+  assert.throws(
+    () => montarDadosMensalidade({ ...contratoBase, id: "" }, "2026-11"),
+    (e) => e.campo === "contratoId"
+  );
+  assert.throws(
+    () => montarDadosMensalidade(contratoBase, "11/2026"),
+    (e) => e.campo === "referencia"
+  );
 });
