@@ -277,13 +277,19 @@ export async function montarSecaoPagamentosCasa(alvo, { codigoCasa, aoAtualizar 
       contratoAtivo = await buscarContratoAtivoDaCasa(codigoLimpo);
       if (contratoAtivo) {
         btnAbrirLancar.hidden = !formLancar.hidden;
-        await gerarMensalidadesContrato(contratoAtivo, { hoje }).catch(() => {});
+        const resumo = await recalcularSituacaoCasa(codigoLimpo, hoje).catch(() => null);
+        if (resumo && typeof aoAtualizar === "function") {
+          await aoAtualizar(resumo);
+        }
       } else {
         btnAbrirLancar.hidden = true;
         formLancar.hidden = true;
       }
 
-      pagamentos = ordenarMensalidades(await listarPagamentosPorCasa(codigoLimpo));
+      const todosPagamentos = ordenarMensalidades(await listarPagamentosPorCasa(codigoLimpo));
+      pagamentos = contratoAtivo
+        ? todosPagamentos.filter((p) => p.contratoId === contratoAtivo.id)
+        : todosPagamentos.filter((p) => p.status === STATUS_PAGAMENTO.PAGO);
       renderizarPainelPagamentos();
     } catch (erro) {
       elLista.innerHTML = `<p class="mensagem-erro">${escaparHtml(erro?.message || "Erro ao carregar as mensalidades da casa.")}</p>`;

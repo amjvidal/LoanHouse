@@ -105,7 +105,26 @@ export async function gerarMensalidadeReferencia(contratoOuId, referencia, hoje 
   const dadosMensalidade = montarDadosMensalidade(contrato, referencia, hoje);
   const existente = await buscarPagamento(dadosMensalidade.id);
   if (existente) {
-    return existente;
+    if (existente.status === STATUS_PAGAMENTO.PAGO) {
+      throw new Error("A mensalidade deste mês já consta como paga.");
+    }
+    if (
+      Number(existente.valor) !== dadosMensalidade.valor ||
+      existente.status !== dadosMensalidade.status
+    ) {
+      await updateDoc(doc(db, "pagamentos", dadosMensalidade.id), {
+        valor: dadosMensalidade.valor,
+        status: dadosMensalidade.status,
+        vencimento: dadosMensalidade.vencimento,
+        atualizadoEm: serverTimestamp(),
+      });
+    }
+    return {
+      ...existente,
+      valor: dadosMensalidade.valor,
+      status: dadosMensalidade.status,
+      vencimento: dadosMensalidade.vencimento,
+    };
   }
 
   const { id, ...campos } = dadosMensalidade;

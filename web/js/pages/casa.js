@@ -280,7 +280,10 @@ form.addEventListener("submit", async (evento) => {
       ? `${cepDigitos.slice(0, 5)}-${cepDigitos.slice(5)}`
       : form.cep.value.trim();
     const textoValor = form.valorAluguel.value.trim();
-    const situacaoEscolhida = !estadoContas.aluguelPago ? "atrasada" : form.situacao.value;
+    const situacaoEscolhida = form.situacao.value === "vaga"
+      ? "vaga"
+      : (!estadoContas.aluguelPago ? "atrasada" : form.situacao.value);
+    const casaVaga = situacaoEscolhida === "vaga";
 
     const dados = {
       rua: form.rua.value.trim(),
@@ -291,8 +294,16 @@ form.addEventListener("submit", async (evento) => {
       uf: form.uf.value.trim().toUpperCase(),
       valorAluguel: textoValor === "" ? 0 : Number(textoValor),
       situacao: situacaoEscolhida,
-      inquilinoNome: form.inquilinoNome.value.trim() || null,
-      aluguelAtrasado: !estadoContas.aluguelPago,
+      inquilinoNome: casaVaga ? null : (form.inquilinoNome.value.trim() || null),
+      aluguelAtrasado: casaVaga ? false : !estadoContas.aluguelPago,
+      ...(casaVaga
+        ? {
+            diasAtraso: 0,
+            vencimentoAtrasado: null,
+            quantidadeAtrasos: 0,
+            valorAtrasado: 0,
+          }
+        : {}),
       iptuAno: new Date().getFullYear(),
       iptuPago: estadoContas.iptuPago,
       aguaPendente: estadoContas.aguaPendente,
