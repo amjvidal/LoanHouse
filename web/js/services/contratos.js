@@ -189,9 +189,10 @@ export async function encerrarContrato(contratoId, dados = {}) {
   const codigoCasa = String(contrato.casaId ?? "").trim().toUpperCase();
   const idInquilino = String(contrato.inquilinoId ?? "").trim();
 
-  const [casa, inquilino] = await Promise.all([
+  const [casa, inquilino, pagamentosSnap] = await Promise.all([
     codigoCasa ? buscarCasa(codigoCasa) : Promise.resolve(null),
     idInquilino ? buscarInquilino(idInquilino) : Promise.resolve(null),
+    getDocs(query(collection(db, "pagamentos"), where("contratoId", "==", idLimpo))),
   ]);
 
   const batch = writeBatch(db);
@@ -200,6 +201,13 @@ export async function encerrarContrato(contratoId, dados = {}) {
     ...encerramento,
     atualizadoEm: serverTimestamp(),
   });
+
+  for (const pagDoc of pagamentosSnap.docs) {
+    const dadosPag = pagDoc.data() || {};
+    if (dadosPag.status !== "pago") {
+      batch.delete(pagDoc.ref);
+    }
+  }
 
   if (casa) {
     batch.update(doc(db, "casas", codigoCasa), {

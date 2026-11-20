@@ -49,6 +49,7 @@ import {
   ordenarMensalidadesPorReferencia,
   referenciaValida,
 } from "../js/utils/validacao-pagamento.js";
+import { linkWhatsApp, mensagemCobranca } from "../js/services/whatsapp.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -736,5 +737,134 @@ test("ação de registrar pagamento e reabertura de mensalidade com recálculo d
   assert.equal(converterDataBrParaIso("2026-11-18"), "2026-11-18");
   assert.equal(converterDataBrParaIso("31/02/2026"), null);
   assert.equal(converterDataBrParaIso("data-invalida"), null);
+});
+
+test("fluxo financeiro integrado ponta a ponta: contrato -> mensalidades -> atraso -> WhatsApp -> pagamento -> encerramento (#77)", () => {
+  const hojeCriacao = "2026-10-05";
+
+  // 1. Casa inicialmente vaga
+  const casaInicial = { codigo: "SAO-123", situacao: "vaga" };
+  assert.equal(temPendencia(casaInicial), false);
+  assert.equal(resumirSituacaoCasa(null, [], hojeCriacao).situacao, "vaga");
+
+  // 2. Criação do contrato (dia de vencimento 10, valor R$ 1.350,00)
+  const dadosContrato = normalizarDadosContrato(
+    {
+      casaId: "sao-123",
+      inquilinoId: "inq-01",
+      valorAluguel: 1350,
+      diaVencimento: 10,
+      dataInicio: "2026-10-01",
+    },
+    hojeCriacao
+  );
+  const contratoAtivo = {
+    id: "ctr-500",
+    ...dadosContrato,
+    inquilinoNome: "  João Carlos da Silva ",
+    inquilinoTelefone: "(081) 99876-5432",
+  };
+
+  // Geração das mensalidades no momento da criação (05/10/2026 -> vence 10/10/2026 -> pendente no prazo)
+  const refsOutubro = listarReferenciasContrato(contratoAtivo.dataInicio, { hoje: hojeCriacao });
+  assert.deepEqual(refsOutubro, ["2026-10"]);
+
+  let mensalidades = refsOutubro.map((ref) =>
+    montarDadosMensalidade(contratoAtivo, ref, hojeCriacao)
+  );
+  assert.equal(mensalidades[0].id, "ctr-500_2026-10");
+  assert.equal(mensalidades[0].status, STATUS_PAGAMENTO.PENDENTE);
+
+  let resumoCasa = resumirSituacaoCasa(contratoAtivo, mensalidades, hojeCriacao);
+  assert.equal(resumoCasa.situacao, "alugada");
+  assert.equal(resumoCasa.aluguelAtrasado, false);
+
+  // 3. Virada para 18/11/2026 sem pagamento de outubro e com novembro já vencido em 10/11
+  const hojeAtraso = "2026-11-18";
+  const refsNovembro = listarReferenciasContrato(contratoAtivo.dataInicio, { hoje: hojeAtraso });
+  assert.deepEqual(refsNovembro, ["2026-10", "2026-11"]);
+
+  mensalidades = refsNovembro.map((ref) =>
+    montarDadosMensalidade(contratoAtivo, ref, hojeAtraso)
+  );
+  assert.equal(mensalidades[0].status, STATUS_PAGAMENTO.ATRASADO);
+  assert.equal(mensalidades[1].status, STATUS_PAGAMENTO.ATRASADO);
+
+  resumoCasa = resumirSituacaoCasa(contratoAtivo, mensalidades, hojeAtraso);
+  assert.deepEqual(resumoCasa, {
+    situacao: "atrasada",
+    aluguelAtrasado: true,
+    quantidadeAtrasos: 2,
+    valorAtrasado: 2700,
+    vencimentoMaisAntigo: "2026-10-10",
+    diasAtraso: 39,
+  });
+
+  // Casa atrasada sobe para prioridade máxima no Painel e acusa pendência de aluguel
+  const casaAtrasada = {
+    ...casaInicial,
+    situacao: resumoCasa.situacao,
+    aluguelAtrasado: resumoCasa.aluguelAtrasado,
+    diasAtraso: resumoCasa.diasAtraso,
+    vencimentoAtrasado: resumoCasa.vencimentoMaisAntigo,
+    quantidadeAtrasos: resumoCasa.quantidadeAtrasos,
+    valorAtrasado: resumoCasa.valorAtrasado,
+  };
+  assert.equal(temPendencia(casaAtrasada), true);
+  assert.deepEqual(
+    listarPendenciasCasa(casaAtrasada).map((p) => p.tipo),
+    ["aluguel"]
+  );
+  assert.equal(
+    ordenarCasasPorPrioridade([{ codigo: "BOA-100", situacao: "alugada" }, casaAtrasada])[0].codigo,
+    "SAO-123"
+  );
+
+  // 4. Mensagem e link de cobrança via WhatsApp para o vencimento mais antigo (10/10)
+  const diaMesVencimento = formatarDiaMes(casaAtrasada.vencimentoAtrasado);
+  assert.equal(diaMesVencimento, "10/10");
+  const textoWhats = mensagemCobranca(
+    contratoAtivo.inquilinoNome,
+    casaAtrasada.codigo,
+    diaMesVencimento
+  );
+  assert.equal(
+    textoWhats,
+    "Olá, João, tudo bem? Passando pra lembrar do aluguel da casa SAO-123, que venceu no dia 10/10."
+  );
+  const urlWhats = linkWhatsApp(contratoAtivo.inquilinoTelefone, textoWhats);
+  assert.equal(urlWhats.startsWith("https://wa.me/5581998765432?text="), true);
+
+  // 5. Registro de pagamento das duas mensalidades em formato brasileiro (DD/MM/AAAA)
+  const dataBaixaIso = converterDataBrParaIso("18/11/2026");
+  assert.equal(dataBaixaIso, "2026-11-18");
+
+  mensalidades = mensalidades.map((m) => ({
+    ...m,
+    status: STATUS_PAGAMENTO.PAGO,
+    dataPagamento: dataBaixaIso,
+  }));
+
+  resumoCasa = resumirSituacaoCasa(contratoAtivo, mensalidades, hojeAtraso);
+  assert.deepEqual(resumoCasa, {
+    situacao: "alugada",
+    aluguelAtrasado: false,
+    quantidadeAtrasos: 0,
+    valorAtrasado: 0,
+    vencimentoMaisAntigo: null,
+    diasAtraso: 0,
+  });
+
+  // 6. Encerramento do contrato devolve a casa para "vaga"
+  const encerramento = normalizarEncerramentoContrato(
+    {
+      dataFim: "2026-11-18",
+      alugariaNovamente: "sim",
+      comentarioFinal: "Quitou todas as parcelas e entregou as chaves.",
+    },
+    { dataInicio: contratoAtivo.dataInicio, hoje: hojeAtraso }
+  );
+  assert.equal(encerramento.status, STATUS_CONTRATO.ENCERRADO);
+  assert.equal(resumirSituacaoCasa(null, mensalidades, hojeAtraso).situacao, "vaga");
 });
 
