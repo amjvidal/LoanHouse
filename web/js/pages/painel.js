@@ -31,7 +31,8 @@ function _htmlAlertaCasa(c) {
   const qtd = Number(c.quantidadeAtrasos || 1);
   const titulo = `${qtd} ${qtd === 1 ? "aluguel em atraso" : "aluguéis em atraso"} • ${formatarMoeda(Number(c.valorAtrasado || 0))}`;
   const subtitulo = `${c.codigo} • venceu em ${diaMes} • ${dias} ${dias === 1 ? "dia em atraso" : "dias em atraso"}`;
-  const msg = mensagemCobranca(c.inquilinoNome || "Inquilino", c.codigo, diaMes);
+  const localCasa = c.bairro || c.codigo;
+  const msg = mensagemCobranca(c.inquilinoNome || "Inquilino", localCasa, diaMes);
   const href = linkWhatsApp(c.inquilinoTelefone || "", msg);
 
   return `
