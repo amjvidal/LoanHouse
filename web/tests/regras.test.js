@@ -743,7 +743,7 @@ test("fluxo financeiro integrado ponta a ponta: contrato -> mensalidades -> atra
   const hojeCriacao = "2026-10-05";
 
   // 1. Casa inicialmente vaga
-  const casaInicial = { codigo: "SAO-123", situacao: "vaga" };
+  const casaInicial = { codigo: "SAO-123", bairro: "São Pedro", situacao: "vaga" };
   assert.equal(temPendencia(casaInicial), false);
   assert.equal(resumirSituacaoCasa(null, [], hojeCriacao).situacao, "vaga");
 
@@ -820,17 +820,23 @@ test("fluxo financeiro integrado ponta a ponta: contrato -> mensalidades -> atra
     "SAO-123"
   );
 
-  // 4. Mensagem e link de cobrança via WhatsApp para o vencimento mais antigo (10/10)
+  // 4. Mensagem e link de cobrança via WhatsApp para o vencimento mais antigo (10/10) com nome do bairro (#81)
   const diaMesVencimento = formatarDiaMes(casaAtrasada.vencimentoAtrasado);
   assert.equal(diaMesVencimento, "10/10");
+  const localCasa = casaAtrasada.bairro || casaAtrasada.codigo;
   const textoWhats = mensagemCobranca(
     contratoAtivo.inquilinoNome,
-    casaAtrasada.codigo,
+    localCasa,
     diaMesVencimento
   );
   assert.equal(
     textoWhats,
-    "Olá, João, tudo bem? Passando pra lembrar do aluguel da casa SAO-123, que venceu no dia 10/10."
+    "Olá, João, tudo bem? Passando pra lembrar do aluguel da casa em São Pedro, que venceu no dia 10/10."
+  );
+  const textoWhatsFallback = mensagemCobranca("Maria", "BOA-100", "05/11");
+  assert.equal(
+    textoWhatsFallback,
+    "Olá, Maria, tudo bem? Passando pra lembrar do aluguel da casa em BOA-100, que venceu no dia 05/11."
   );
   const urlWhats = linkWhatsApp(contratoAtivo.inquilinoTelefone, textoWhats);
   assert.equal(urlWhats.startsWith("https://wa.me/5581998765432?text="), true);

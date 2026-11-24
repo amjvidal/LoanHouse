@@ -7,8 +7,9 @@ export function linkWhatsApp(telefone, mensagem) {
   return `https://wa.me/${numero}?text=${encodeURIComponent(String(mensagem ?? ""))}`;
 }
 
-export function mensagemCobranca(nome, codigoCasa, vencimentoBR) {
+export function mensagemCobranca(nome, bairroOuCodigo, vencimentoBR) {
   const nomeLimpo = String(nome ?? "").trim();
   const primeiroNome = (nomeLimpo ? nomeLimpo.split(/\s+/)[0] : "") || "Inquilino";
-  return `Olá, ${primeiroNome}, tudo bem? Passando pra lembrar do aluguel da casa ${codigoCasa}, que venceu no dia ${vencimentoBR}.`;
+  const local = String(bairroOuCodigo ?? "").trim();
+  return `Olá, ${primeiroNome}, tudo bem? Passando pra lembrar do aluguel da casa em ${local}, que venceu no dia ${vencimentoBR}.`;
 }

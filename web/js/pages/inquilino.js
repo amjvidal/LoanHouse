@@ -25,6 +25,8 @@ import {
 } from "../components/cartao-casa.js";
 import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
 import { montarSecaoFiadores } from "../components/secao-fiadores.js";
+import { linkWhatsApp, mensagemCobranca } from "../services/whatsapp.js";
+import { formatarDiaMes } from "../utils/situacao.js";
 
 const params = new URLSearchParams(location.search);
 const inquilinoId = params.get("id");
@@ -148,19 +150,21 @@ function montarLinkWhatsapp() {
   if (!btnWhatsapp) return;
   const nome = form.nomeCompleto.value.trim() || dadosInquilinoAtual?.nomeCompleto || "inquilino";
   const primeiroNome = nome.split(/\s+/)[0];
-  const telDigitos = String(form.telefone.value || dadosInquilinoAtual?.telefone || "").replace(/\D/g, "");
-  const telComDdi = telDigitos.startsWith("55") ? telDigitos : `55${telDigitos}`;
+  const telefone = form.telefone.value || dadosInquilinoAtual?.telefone || "";
   const codigo = casaVinculada?.codigo || contratoAtivo?.casaId || "";
+  const local = casaVinculada?.bairro || codigo;
   const valor = contratoAtivo?.valorAluguel ?? casaVinculada?.valorAluguel ?? 0;
   const diaVenc = contratoAtivo?.diaVencimento || 10;
 
-  const mensagem = codigo
-    ? `Olá, ${primeiroNome}, tudo bem? Passando para falar sobre a locação da casa ${codigo}${valor > 0 ? ` (aluguel de ${formatarMoeda(valor)}, vencimento dia ${String(diaVenc).padStart(2, "0")})` : ""}.`
-    : `Olá, ${primeiroNome}, tudo bem? Aqui é da LoanHouse.`;
+  let mensagem = `Olá, ${primeiroNome}, tudo bem? Aqui é da LoanHouse.`;
+  if (casaVinculada?.aluguelAtrasado && casaVinculada?.vencimentoAtrasado) {
+    mensagem = mensagemCobranca(primeiroNome, local, formatarDiaMes(casaVinculada.vencimentoAtrasado));
+  } else if (local) {
+    mensagem = `Olá, ${primeiroNome}, tudo bem? Passando para falar sobre a locação da casa em ${local}${valor > 0 ? ` (aluguel de ${formatarMoeda(valor)}, vencimento dia ${String(diaVenc).padStart(2, "0")})` : ""}.`;
+  }
 
-  btnWhatsapp.href = telDigitos
-    ? `https://wa.me/${telComDdi}?text=${encodeURIComponent(mensagem)}`
-    : "#";
+  const telDigitos = String(telefone).replace(/\D/g, "");
+  btnWhatsapp.href = telDigitos ? linkWhatsApp(telefone, mensagem) : "#";
 }
 
 function atualizarCabecalhoInquilino() {
