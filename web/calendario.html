@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Calendário · Gerenciador Imobiliário</title>
+  <title>Calendário · LoanHouse</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/componentes.css">
@@ -12,8 +12,55 @@
 <body>
   <header class="topo"><nav class="menu" data-menu></nav></header>
   <main class="conteudo">
-    <h1>Calendário</h1>
-    <div data-conteudo></div>
+    <header class="painel-topo">
+      <div>
+        <h1 class="painel-topo__titulo">Calendário</h1>
+        <p class="painel-topo__subtitulo" data-subtitulo-calendario>Agenda e vencimentos • Visão mensal</p>
+      </div>
+      <div class="usuario-chip">
+        <span class="usuario-chip__avatar" data-usuario-iniciais></span>
+        <span class="usuario-chip__nome" data-usuario-nome></span>
+      </div>
+    </header>
+
+    <section class="calendario-container">
+      <div class="calendario-barra">
+        <div class="calendario-navegacao">
+          <button id="btn-mes-anterior" class="botao botao--secundario botao--icone" type="button" aria-label="Mês anterior">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <h2 class="calendario-mes-titulo" data-mes-ano>Carregando...</h2>
+          <button id="btn-proximo-mes" class="botao botao--secundario botao--icone" type="button" aria-label="Próximo mês">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+          <button id="btn-hoje" class="botao botao--secundario botao--compacto" type="button">Hoje</button>
+        </div>
+
+        <div class="calendario-legenda">
+          <span class="legenda-item"><span class="legenda-ponto legenda-ponto--vencimento" aria-hidden="true"></span> Vencimentos</span>
+          <span class="legenda-item"><span class="legenda-ponto legenda-ponto--atraso" aria-hidden="true"></span> Atrasados</span>
+          <span class="legenda-item"><span class="legenda-ponto legenda-ponto--evento" aria-hidden="true"></span> Compromissos</span>
+        </div>
+      </div>
+
+      <div class="calendario-cartao">
+        <div class="calendario-semana-cabecalho" aria-hidden="true">
+          <div>Dom</div>
+          <div>Seg</div>
+          <div>Ter</div>
+          <div>Qua</div>
+          <div>Qui</div>
+          <div>Sex</div>
+          <div>Sáb</div>
+        </div>
+
+        <div class="calendario-grade" data-grade-mes role="grid" aria-label="Calendário mensal"></div>
+      </div>
+    </section>
   </main>
   <script type="module" src="js/pages/calendario.js"></script>
 </body>
