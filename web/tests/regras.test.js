@@ -50,6 +50,14 @@ import {
   referenciaValida,
 } from "../js/utils/validacao-pagamento.js";
 import { linkWhatsApp, mensagemCobranca } from "../js/services/whatsapp.js";
+import {
+  formatarDataIso,
+  formatarMesAno,
+  gerarGradeMes,
+  navegarMes,
+  NOMES_MESES,
+  DIAS_SEMANA_SIGLAS,
+} from "../js/utils/calendario.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -872,5 +880,56 @@ test("fluxo financeiro integrado ponta a ponta: contrato -> mensalidades -> atra
   );
   assert.equal(encerramento.status, STATUS_CONTRATO.ENCERRADO);
   assert.equal(resumirSituacaoCasa(null, mensalidades, hojeAtraso).situacao, "vaga");
+});
+
+test("calendário mensal: geração de grade, navegação entre meses e destaques (#84)", () => {
+  // 1. Formatação de nomes de meses e anos
+  assert.equal(formatarMesAno(2026, 11), "Novembro de 2026");
+  assert.equal(formatarMesAno(2027, 1), "Janeiro de 2027");
+  assert.equal(NOMES_MESES.length, 12);
+  assert.equal(DIAS_SEMANA_SIGLAS.length, 7);
+
+  // 2. Navegação de meses com transição de ano
+  assert.deepEqual(navegarMes(2026, 11, 1), { ano: 2026, mes: 12 });
+  assert.deepEqual(navegarMes(2026, 12, 1), { ano: 2027, mes: 1 });
+  assert.deepEqual(navegarMes(2027, 1, -1), { ano: 2026, mes: 12 });
+  assert.deepEqual(navegarMes(2026, 5, -2), { ano: 2026, mes: 3 });
+
+  // 3. Formatação ISO de data
+  assert.equal(formatarDataIso(2026, 11, 5), "2026-11-05");
+  assert.equal(formatarDataIso(2026, 2, 9), "2026-02-09");
+
+  // 4. Grade de Novembro de 2026 (dia 01/11/2026 cai em um domingo)
+  const gradeNov = gerarGradeMes(2026, 11, "2026-11-24");
+  assert.equal(gradeNov.length % 7, 0); // Múltiplo de semanas completas
+  assert.equal(gradeNov[0].diaSemana, 0); // Primeiro dia é domingo
+  assert.equal(gradeNov[gradeNov.length - 1].diaSemana, 6); // Último dia é sábado
+
+  // O dia 1 de nov/2026 é domingo, então o primeiro item da grade é 01/11/2026
+  assert.equal(gradeNov[0].dataIso, "2026-11-01");
+  assert.equal(gradeNov[0].noMesAtual, true);
+
+  // Novembro tem 30 dias: dia 30/11 cai em uma segunda-feira (índice 29)
+  assert.equal(gradeNov[29].dataIso, "2026-11-30");
+  assert.equal(gradeNov[29].noMesAtual, true);
+
+  // O restante da semana é preenchido com dezembro
+  assert.equal(gradeNov[30].dataIso, "2026-12-01");
+  assert.equal(gradeNov[30].noMesAtual, false);
+
+  // Verificação do destaque de "hoje"
+  const diaHoje = gradeNov.find((d) => d.ehHoje);
+  assert.ok(diaHoje);
+  assert.equal(diaHoje.dataIso, "2026-11-24");
+  assert.equal(diaHoje.noMesAtual, true);
+
+  // 5. Grade de Fevereiro bissexto (2024 = 29 dias) vs não-bissexto (2026 = 28 dias)
+  const gradeFev24 = gerarGradeMes(2024, 2);
+  const diasFev24NoMes = gradeFev24.filter((d) => d.noMesAtual);
+  assert.equal(diasFev24NoMes.length, 29);
+
+  const gradeFev26 = gerarGradeMes(2026, 2);
+  const diasFev26NoMes = gradeFev26.filter((d) => d.noMesAtual);
+  assert.equal(diasFev26NoMes.length, 28);
 });
 
