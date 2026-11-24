@@ -40,10 +40,20 @@
           <button id="btn-hoje" class="botao botao--secundario botao--compacto" type="button">Hoje</button>
         </div>
 
-        <div class="calendario-legenda">
-          <span class="legenda-item"><span class="legenda-ponto legenda-ponto--vencimento" aria-hidden="true"></span> Vencimentos</span>
-          <span class="legenda-item"><span class="legenda-ponto legenda-ponto--atraso" aria-hidden="true"></span> Atrasados</span>
-          <span class="legenda-item"><span class="legenda-ponto legenda-ponto--evento" aria-hidden="true"></span> Compromissos</span>
+        <div class="calendario-acoes-topo">
+          <div class="calendario-legenda">
+            <span class="legenda-item"><span class="legenda-ponto legenda-ponto--vencimento" aria-hidden="true"></span> Vencimentos</span>
+            <span class="legenda-item"><span class="legenda-ponto legenda-ponto--atraso" aria-hidden="true"></span> Atrasados</span>
+            <span class="legenda-item"><span class="legenda-ponto legenda-ponto--evento" aria-hidden="true"></span> Compromissos</span>
+          </div>
+
+          <button id="btn-novo-evento" class="botao botao--primario botao--compacto" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Novo compromisso</span>
+          </button>
         </div>
       </div>
 
@@ -61,6 +71,86 @@
         <div class="calendario-grade" data-grade-mes role="grid" aria-label="Calendário mensal"></div>
       </div>
     </section>
+
+    <!-- Modal de Criar/Editar Evento (#86) -->
+    <div id="modal-evento" class="modal-confirmacao" hidden>
+      <div class="modal-confirmacao__caixa modal-evento__caixa" role="dialog" aria-modal="true" aria-labelledby="modal-evento-titulo">
+        <div class="modal-confirmacao__topo">
+          <span class="modal-confirmacao__icone modal-confirmacao__icone--sucesso" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </span>
+          <div class="modal-confirmacao__conteudo">
+            <h3 id="modal-evento-titulo" class="modal-confirmacao__titulo" data-modal-evento-titulo>Novo compromisso</h3>
+            <p class="modal-confirmacao__texto">Agende visitas, vistorias e compromissos no calendário.</p>
+          </div>
+        </div>
+
+        <form id="form-evento" class="modal-evento__form" novalidate>
+          <input type="hidden" id="evento-id" name="id">
+
+          <div class="campo">
+            <label for="evento-titulo">Título ou assunto *</label>
+            <input type="text" id="evento-titulo" name="titulo" placeholder="Ex.: Visita com interessado" required>
+          </div>
+
+          <div class="grade-campos grade-campos--2col">
+            <div class="campo">
+              <label for="evento-data">Data *</label>
+              <input type="date" id="evento-data" name="data" required>
+            </div>
+            <div class="campo">
+              <label for="evento-hora">Horário</label>
+              <input type="time" id="evento-hora" name="hora">
+            </div>
+          </div>
+
+          <div class="grade-campos grade-campos--2col">
+            <div class="campo">
+              <label for="evento-tipo">Tipo</label>
+              <select id="evento-tipo" name="tipo">
+                <option value="visita">Visita</option>
+                <option value="vistoria">Vistoria</option>
+                <option value="manutencao">Manutenção</option>
+                <option value="reuniao">Reunião</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="evento-casa">Imóvel vinculado</label>
+              <select id="evento-casa" name="casaId">
+                <option value="">Nenhum imóvel</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="evento-descricao">Observações</label>
+            <textarea id="evento-descricao" name="descricao" rows="2" placeholder="Ex.: Levar chaves e ficha de cadastro"></textarea>
+          </div>
+
+          <p id="evento-feedback" class="mensagem-erro" role="alert" hidden></p>
+
+          <div class="modal-evento__acoes">
+            <button type="button" id="btn-excluir-evento" class="botao botao--perigo botao--compacto" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>Excluir</span>
+            </button>
+            <div class="modal-evento__acoes-direita">
+              <button type="button" id="btn-cancelar-evento" class="botao botao--secundario botao--compacto">Cancelar</button>
+              <button type="submit" id="btn-salvar-evento" class="botao botao--primario botao--compacto">Salvar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
   <script type="module" src="js/pages/calendario.js"></script>
 </body>

@@ -58,6 +58,13 @@ import {
   NOMES_MESES,
   DIAS_SEMANA_SIGLAS,
 } from "../js/utils/calendario.js";
+import {
+  TIPOS_EVENTO,
+  horaValida,
+  normalizarDadosEvento,
+  ordenarEventosPorDataHora,
+  validarEvento,
+} from "../js/utils/validacao-evento.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -931,5 +938,54 @@ test("calendário mensal: geração de grade, navegação entre meses e destaque
   const gradeFev26 = gerarGradeMes(2026, 2);
   const diasFev26NoMes = gradeFev26.filter((d) => d.noMesAtual);
   assert.equal(diasFev26NoMes.length, 28);
+});
+
+test("eventos do calendário: validação, normalização e ordenação por data/hora (#86)", () => {
+  // 1. Validação de horários
+  assert.equal(horaValida("14:30"), true);
+  assert.equal(horaValida("00:00"), true);
+  assert.equal(horaValida("23:59"), true);
+  assert.equal(horaValida(""), true); // opcional
+  assert.equal(horaValida(null), true);
+  assert.equal(horaValida("24:00"), false);
+  assert.equal(horaValida("12:60"), false);
+  assert.equal(horaValida("9:00"), false); // deve ser 2 dígitos no horário
+
+  // 2. Validação de campos obrigatórios
+  assert.throws(() => validarEvento({}), /Informe o título/);
+  assert.throws(() => validarEvento({ titulo: "Oi" }), /pelo menos 3 caracteres/);
+  assert.throws(() => validarEvento({ titulo: "Visita com cliente" }), /Informe a data/);
+  assert.throws(() => validarEvento({ titulo: "Visita", data: "data-errada" }), /Data inválida/);
+  assert.throws(() => validarEvento({ titulo: "Visita", data: "2026-11-25", hora: "99:99" }), /Horário inválido/);
+  assert.throws(() => validarEvento({ titulo: "Visita", data: "2026-11-25", tipo: "tipo_inexistente" }), /Tipo de compromisso inválido/);
+
+  // 3. Normalização de dados válidos
+  const dadosValidos = {
+    titulo: "  Vistoria de saída com chaveiro  ",
+    data: "2026-11-25",
+    hora: "10:15",
+    tipo: "VISTORIA",
+    casaId: "sao-123",
+    descricao: "  Conferir pintura e relógio de luz.  ",
+  };
+  const normalizado = normalizarDadosEvento(dadosValidos);
+  assert.deepEqual(normalizado, {
+    titulo: "Vistoria de saída com chaveiro",
+    data: "2026-11-25",
+    hora: "10:15",
+    tipo: TIPOS_EVENTO.VISTORIA,
+    casaId: "SAO-123",
+    descricao: "Conferir pintura e relógio de luz.",
+  });
+
+  // 4. Ordenação cronológica por data e hora
+  const desordenados = [
+    { id: "e1", data: "2026-11-26", hora: "09:00", titulo: "Compromisso 1" },
+    { id: "e2", data: "2026-11-25", hora: "15:00", titulo: "Compromisso 2" },
+    { id: "e3", data: "2026-11-25", hora: "10:00", titulo: "Compromisso 3" },
+    { id: "e4", data: "2026-11-25", hora: null, titulo: "Compromisso 4" },
+  ];
+  const ordenados = ordenarEventosPorDataHora(desordenados);
+  assert.deepEqual(ordenados.map((e) => e.id), ["e3", "e2", "e4", "e1"]);
 });
 

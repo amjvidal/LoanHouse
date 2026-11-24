@@ -1236,6 +1236,13 @@ input:focus, select:focus, textarea:focus {
   margin-bottom: 4px;
 }
 
+.calendario-acoes-topo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .calendario-navegacao {
   display: flex;
   align-items: center;
@@ -1369,7 +1376,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 6px;
+  padding: 4px 8px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -1378,21 +1385,82 @@ input:focus, select:focus, textarea:focus {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  text-align: left;
+  transition: transform .05s, box-shadow .15s;
+}
+.item-calendario:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+}
+.item-calendario__hora {
+  opacity: 0.85;
+  font-size: 11px;
+}
+.item-calendario__titulo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .item-calendario--vencimento {
   background: #eff6ff;
   color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  border-color: #bfdbfe;
 }
 .item-calendario--atraso {
   background: #fef2f2;
   color: #b91c1c;
-  border: 1px solid #fecaca;
+  border-color: #fecaca;
 }
 .item-calendario--evento {
   background: #ecfdf5;
   color: #047857;
-  border: 1px solid #a7f3d0;
+  border-color: #a7f3d0;
+}
+
+/* Modal de Compromisso / Evento (#86) */
+.modal-evento__caixa {
+  width: min(540px, 100%);
+}
+.modal-evento__form {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+.modal-evento__acoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+.modal-evento__acoes-direita {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.dia-calendario__btn-add {
+  opacity: 0;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: opacity .15s, color .15s, background .15s;
+}
+.dia-calendario:hover .dia-calendario__btn-add {
+  opacity: 1;
+}
+.dia-calendario__btn-add:hover {
+  color: var(--cor-primaria);
+  background: #eef4fa;
 }
 
 @media (max-width: 960px) {
