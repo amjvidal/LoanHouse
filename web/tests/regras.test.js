@@ -65,6 +65,12 @@ import {
   ordenarEventosPorDataHora,
   validarEvento,
 } from "../js/utils/validacao-evento.js";
+import {
+  validarArquivoEnvio,
+  ehArquivoImagem,
+  formatarTamanhoBytes,
+  LIMITE_BYTES,
+} from "../js/utils/validacao-arquivo.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -987,5 +993,53 @@ test("eventos do calendário: validação, normalização e ordenação por data
   ];
   const ordenados = ordenarEventosPorDataHora(desordenados);
   assert.deepEqual(ordenados.map((e) => e.id), ["e3", "e2", "e4", "e1"]);
+});
+
+test("fotos e documentos: validação de formatos, limite de 10 MB e formatação (#40)", () => {
+  // 1. Arquivos válidos (JPG, PNG, PDF até 10 MB)
+  assert.equal(
+    validarArquivoEnvio({ name: "fachada.jpg", type: "image/jpeg", size: 2 * 1024 * 1024 }),
+    true
+  );
+  assert.equal(
+    validarArquivoEnvio({ name: "sala.png", type: "image/png", size: 5 * 1024 * 1024 }),
+    true
+  );
+  assert.equal(
+    validarArquivoEnvio({ name: "contrato-assinado.pdf", type: "application/pdf", size: 9 * 1024 * 1024 }),
+    true
+  );
+
+  // 2. Rejeição de formatos não suportados
+  assert.throws(
+    () => validarArquivoEnvio({ name: "planilha.xlsx", type: "application/vnd.ms-excel", size: 1024 }),
+    /Formato não suportado/
+  );
+  assert.throws(
+    () => validarArquivoEnvio({ name: "script.exe", type: "application/x-msdownload", size: 1024 }),
+    /Formato não suportado/
+  );
+  assert.throws(
+    () => validarArquivoEnvio(null),
+    /Selecione um arquivo/
+  );
+
+  // 3. Rejeição de arquivo acima de 10 MB
+  assert.throws(
+    () => validarArquivoEnvio({ name: "video.mp4", type: "image/jpeg", size: LIMITE_BYTES + 1 }),
+    /ultrapassa o tamanho máximo permitido de 10 MB/
+  );
+
+  // 4. Detecção de imagens vs documentos para galeria/lista
+  assert.equal(ehArquivoImagem("foto1.jpg"), true);
+  assert.equal(ehArquivoImagem("FOTO2.JPEG"), true);
+  assert.equal(ehArquivoImagem("planta.PNG"), true);
+  assert.equal(ehArquivoImagem("documento.pdf"), false);
+  assert.equal(ehArquivoImagem("contrato.docx"), false);
+
+  // 5. Formatação de tamanho legível
+  assert.equal(formatarTamanhoBytes(500), "500 B");
+  assert.equal(formatarTamanhoBytes(2048), "2.0 KB");
+  assert.equal(formatarTamanhoBytes(5 * 1024 * 1024), "5.0 MB");
 });
 
