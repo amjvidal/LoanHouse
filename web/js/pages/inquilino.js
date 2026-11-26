@@ -25,6 +25,7 @@ import {
 } from "../components/cartao-casa.js";
 import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
 import { montarSecaoFiadores } from "../components/secao-fiadores.js";
+import { montarSecaoArquivos } from "../components/secao-arquivos.js";
 import { linkWhatsApp, mensagemCobranca } from "../services/whatsapp.js";
 import { formatarDiaMes } from "../utils/situacao.js";
 
@@ -472,7 +473,10 @@ exigirLogin(async (usuario) => {
     alternarModoBotoesTopo(true);
     sincronizarSecaoConjuge();
     atualizarCabecalhoInquilino();
-    await montarSecaoFiadores("[data-secao-fiadores]", null);
+    await Promise.all([
+      montarSecaoFiadores("[data-secao-fiadores]", null),
+      montarSecaoArquivos("[data-secao-arquivos]", null),
+    ]);
     return;
   }
 
@@ -501,5 +505,12 @@ exigirLogin(async (usuario) => {
     || null;
 
   preencherFormularioComInquilino(inquilino);
-  await montarSecaoFiadores("[data-secao-fiadores]", inquilinoId);
+  await Promise.all([
+    montarSecaoFiadores("[data-secao-fiadores]", inquilinoId),
+    montarSecaoArquivos("[data-secao-arquivos]", {
+      tipo: "inquilinos",
+      idEntidade: inquilinoId,
+      documentosIniciais: inquilino.documentos || [],
+    }),
+  ]);
 });

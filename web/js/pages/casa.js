@@ -12,6 +12,7 @@ import { abrirModalConfirmacao } from "../components/modal-confirmacao.js";
 import { montarSecaoContrato } from "../components/secao-contrato.js";
 import { montarSecaoHistoricoCasa } from "../components/secao-historico-casa.js";
 import { montarSecaoPagamentosCasa } from "../components/secao-pagamentos-casa.js";
+import { montarSecaoArquivos } from "../components/secao-arquivos.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -385,6 +386,7 @@ exigirLogin(async (usuario) => {
       montarSecaoContrato("[data-secao-contrato]"),
       montarSecaoPagamentosCasa("[data-secao-pagamentos]"),
       montarSecaoHistoricoCasa("[data-secao-historico]"),
+      montarSecaoArquivos("[data-secao-arquivos]"),
     ]);
     return;
   }
@@ -456,5 +458,11 @@ exigirLogin(async (usuario) => {
       aoAtualizar: sincronizarEstadoCasaDoBanco,
     }),
     montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl),
+    montarSecaoArquivos("[data-secao-arquivos]", {
+      tipo: "casas",
+      idEntidade: codigoUrl,
+      fotosIniciais: casa.fotos || [],
+      documentosIniciais: casa.documentos || [],
+    }),
   ]);
 });
