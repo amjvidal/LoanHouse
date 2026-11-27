@@ -1413,3 +1413,28 @@ test("cadastro de parceiros: validação, normalização, ordenação e busca (#
   assert.deepEqual(filtrarParceiros(lista, "977773333").map((p) => p.id), ["p3"]);
   assert.equal(filtrarParceiros(lista, "").length, 3);
 });
+
+test("revisão de segurança e proteção de dados pessoais (LGPD) em todas as regras do Firestore (#122)", () => {
+  const urlRegras = new URL("../../firebase/firestore.rules", import.meta.url);
+  const regras = readFileSync(urlRegras, "utf8");
+
+  // 1. Nenhuma coleção deve usar 'allow read, write: if autorizado();' sem validação de esquema em create/update
+  assert.equal(/allow\s+read\s*,\s*write\s*:\s*if\s+autorizado\(\)\s*;/.test(regras), false);
+
+  // 2. Isolamento de /usuarios/{uid}: leitura restrita ao próprio UID e escrita bloqueada
+  assert.match(regras, /allow read:\s*if logado\(\) && request\.auth\.uid == uid;/);
+  assert.match(regras, /allow write:\s*if false;/);
+
+  // 3. Validações de dados pessoais (LGPD) em inquilinos e fiadores (CPF, telefone, cônjuge e limites de texto)
+  assert.match(regras, /function cpfValido\(cpf\)/);
+  assert.match(regras, /function telefoneValido\(tel\)/);
+  assert.match(regras, /function conjugeValido\(dados\)/);
+  assert.match(regras, /cpfValido\(request\.resource\.data\.cpf\)/);
+  assert.match(regras, /conjugeValido\(request\.resource\.data\)/);
+
+  // 4. Validações de esquema nas novas coleções da Sprint 5 (contas, eventos, parceiros e pagamentos)
+  assert.match(regras, /tipoContaValido\(request\.resource\.data\.tipo\)/);
+  assert.match(regras, /tipoEventoValido\(request\.resource\.data\.tipo\)/);
+  assert.match(regras, /match \/parceiros\/\{id\}/);
+  assert.match(regras, /textoLimitado\(request\.resource\.data\.servico,\s*80\)/);
+});

@@ -1,7 +1,9 @@
 rules_version = '2';
 
-// Só entra quem tem login E um documento em /usuarios/{uid} (criado à mão no console pelo Mário).
-// O script de verificação diária usa a conta de serviço (Admin SDK), que não passa por estas regras.
+// Segurança e proteção de dados pessoais (LGPD):
+// - Apenas usuários autenticados E cadastrados em /usuarios/{uid} têm acesso às coleções.
+// - Dados pessoais (CPF, RG, telefone, cônjuge, fiadores e contratos) têm formato e tamanho validados.
+// - O script de verificação diária usa a conta de serviço (Admin SDK), que não passa por estas regras.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -15,6 +17,25 @@ service cloud.firestore {
 
     function textoNaoVazio(valor) {
       return valor is string && valor.size() > 0;
+    }
+
+    function textoLimitado(valor, maximo) {
+      return textoNaoVazio(valor) && valor.size() <= maximo;
+    }
+
+    function cpfValido(cpf) {
+      return textoLimitado(cpf, 18)
+        && cpf.matches('^([0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]{2}|[0-9]{11})$');
+    }
+
+    function telefoneValido(tel) {
+      return textoLimitado(tel, 25);
+    }
+
+    function conjugeValido(dados) {
+      return !('conjuge' in dados)
+        || dados.conjuge == null
+        || (dados.conjuge is map && textoLimitado(dados.conjuge.nomeCompleto, 120));
     }
 
     function situacaoValida(s) {
@@ -37,6 +58,14 @@ service cloud.firestore {
       return s in ['aberta', 'resolvida'];
     }
 
+    function tipoContaValido(t) {
+      return t in ['agua', 'luz'];
+    }
+
+    function tipoEventoValido(t) {
+      return t in ['visita', 'vistoria', 'manutencao', 'reuniao', 'vencimento', 'compromisso', 'outro'];
+    }
+
     match /usuarios/{uid} {
       allow read: if logado() && request.auth.uid == uid;
       allow write: if false;
@@ -56,26 +85,34 @@ service cloud.firestore {
           && textoNaoVazio(request.resource.data.data)
           && statusReclamacaoValido(request.resource.data.status);
       }
+
       match /contas/{id} {
-        allow read, write: if autorizado();
+        allow read, delete: if autorizado();
+        allow create, update: if autorizado()
+          && tipoContaValido(request.resource.data.tipo)
+          && textoNaoVazio(request.resource.data.referencia)
+          && request.resource.data.valor is number
+          && request.resource.data.valor > 0
+          && request.resource.data.pago is bool;
       }
     }
 
     match /inquilinos/{id} {
       allow read, delete: if autorizado();
       allow create, update: if autorizado()
-        && textoNaoVazio(request.resource.data.nomeCompleto)
-        && textoNaoVazio(request.resource.data.cpf)
-        && textoNaoVazio(request.resource.data.telefone)
-        && (!('estadoCivil' in request.resource.data) || estadoCivilValido(request.resource.data.estadoCivil));
+        && textoLimitado(request.resource.data.nomeCompleto, 120)
+        && cpfValido(request.resource.data.cpf)
+        && telefoneValido(request.resource.data.telefone)
+        && (!('estadoCivil' in request.resource.data) || estadoCivilValido(request.resource.data.estadoCivil))
+        && conjugeValido(request.resource.data);
 
       match /fiadores/{fiadorId} {
         allow read, delete: if autorizado();
         allow create, update: if autorizado()
-          && textoNaoVazio(request.resource.data.nomeCompleto)
-          && textoNaoVazio(request.resource.data.cpf)
-          && textoNaoVazio(request.resource.data.telefone)
-          && textoNaoVazio(request.resource.data.endereco);
+          && textoLimitado(request.resource.data.nomeCompleto, 120)
+          && cpfValido(request.resource.data.cpf)
+          && telefoneValido(request.resource.data.telefone)
+          && textoLimitado(request.resource.data.endereco, 250);
       }
     }
 
@@ -95,15 +132,29 @@ service cloud.firestore {
     match /pagamentos/{id} {
       allow read, delete: if autorizado();
       allow create, update: if autorizado()
-        && statusPagamentoValido(request.resource.data.status);
+        && statusPagamentoValido(request.resource.data.status)
+        && textoNaoVazio(request.resource.data.contratoId)
+        && textoNaoVazio(request.resource.data.casaId)
+        && textoNaoVazio(request.resource.data.referencia)
+        && textoNaoVazio(request.resource.data.vencimento)
+        && request.resource.data.valor is number
+        && request.resource.data.valor > 0;
     }
 
     match /eventos/{id} {
-      allow read, write: if autorizado();
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && textoLimitado(request.resource.data.titulo, 140)
+        && textoNaoVazio(request.resource.data.data)
+        && tipoEventoValido(request.resource.data.tipo);
     }
 
     match /parceiros/{id} {
-      allow read, write: if autorizado();
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && textoLimitado(request.resource.data.nome, 120)
+        && textoLimitado(request.resource.data.servico, 80)
+        && telefoneValido(request.resource.data.telefone);
     }
 
     match /estoque/{id} {
