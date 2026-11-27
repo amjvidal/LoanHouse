@@ -12,6 +12,12 @@ import {
   resumirEstoque,
   validarItemEstoque,
 } from "../js/utils/validacao-estoque.js";
+import {
+  STATUS_RECLAMACAO,
+  normalizarDadosReclamacao,
+  ordenarReclamacoes,
+  validarReclamacao,
+} from "../js/utils/validacao-reclamacao.js";
 import { gerarCodigoCasa, codigoDisponivel } from "../js/utils/codigo-casa.js";
 import {
   calcularSituacao, vencimentoDaReferencia, diasDeAtraso,
@@ -1103,4 +1109,48 @@ test("estoque de materiais: cadastro, aumentar/diminuir quantidade, busca e regr
   assert.match(regras, /match \/estoque\/\{id\}/);
   assert.match(regras, /request\.resource\.data\.quantidade >= 0/);
   assert.match(regras, /textoNaoVazio\(request\.resource\.data\.unidade\)/);
+});
+
+test("reclamações da casa: validação, normalização, ordenação e regra do Firestore (#45)", () => {
+  // 1. Campos obrigatórios: data e descrição
+  assert.throws(() => validarReclamacao({ data: "2026-11-26", descricao: "" }), /descrição/);
+  assert.throws(() => validarReclamacao({ data: "2026-11-26", descricao: "abc" }), /5 caracteres/);
+  assert.throws(() => validarReclamacao({ data: "", descricao: "Vazamento na pia" }), /data/);
+  assert.throws(() => validarReclamacao({ data: "26/11/2026", descricao: "Vazamento na pia" }), /inválida/);
+  assert.throws(() => validarReclamacao({ data: "2026-11-26", descricao: "Vazamento na pia", status: "pendente" }), /Status/);
+  assert.equal(validarReclamacao({ data: "2026-11-26", descricao: "Vazamento na pia" }), true);
+
+  // 2. Normalização: nova reclamação entra como aberta, textos sem espaços sobrando
+  const nova = normalizarDadosReclamacao({
+    data: " 2026-11-26 ",
+    descricao: "  Vazamento na pia do banheiro  ",
+    inquilinoId: "",
+    inquilinoNome: "  Maria  ",
+  });
+  assert.deepEqual(nova, {
+    descricao: "Vazamento na pia do banheiro",
+    data: "2026-11-26",
+    status: STATUS_RECLAMACAO.ABERTA,
+    inquilinoId: null,
+    inquilinoNome: "Maria",
+  });
+  assert.equal(
+    normalizarDadosReclamacao({ data: "2026-11-26", descricao: "Porta emperrada", status: "RESOLVIDA" }).status,
+    STATUS_RECLAMACAO.RESOLVIDA
+  );
+
+  // 3. Ordenação: abertas primeiro, depois a mais recente
+  const ordenadas = ordenarReclamacoes([
+    { id: "a", status: "resolvida", data: "2026-11-25" },
+    { id: "b", status: "aberta", data: "2026-11-01" },
+    { id: "c", status: "aberta", data: "2026-11-20" },
+    { id: "d", status: "resolvida", data: "2026-10-10" },
+  ]);
+  assert.deepEqual(ordenadas.map((r) => r.id), ["c", "b", "a", "d"]);
+
+  // 4. Regra do Firestore valida descrição, data e status
+  const regras = readFileSync(new URL("../../firebase/firestore.rules", import.meta.url), "utf8");
+  assert.match(regras, /match \/reclamacoes\/\{id\}/);
+  assert.match(regras, /statusReclamacaoValido\(request\.resource\.data\.status\)/);
+  assert.match(regras, /textoNaoVazio\(request\.resource\.data\.descricao\)/);
 });

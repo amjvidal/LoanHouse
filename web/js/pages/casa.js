@@ -13,6 +13,7 @@ import { montarSecaoContrato } from "../components/secao-contrato.js";
 import { montarSecaoHistoricoCasa } from "../components/secao-historico-casa.js";
 import { montarSecaoPagamentosCasa } from "../components/secao-pagamentos-casa.js";
 import { montarSecaoArquivos } from "../components/secao-arquivos.js";
+import { montarSecaoReclamacoesCasa } from "../components/secao-reclamacoes-casa.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -387,6 +388,7 @@ exigirLogin(async (usuario) => {
       montarSecaoPagamentosCasa("[data-secao-pagamentos]"),
       montarSecaoHistoricoCasa("[data-secao-historico]"),
       montarSecaoArquivos("[data-secao-arquivos]"),
+      montarSecaoReclamacoesCasa("[data-secao-reclamacoes]"),
     ]);
     return;
   }
@@ -463,6 +465,12 @@ exigirLogin(async (usuario) => {
       idEntidade: codigoUrl,
       fotosIniciais: casa.fotos || [],
       documentosIniciais: casa.documentos || [],
+    }),
+    montarSecaoReclamacoesCasa("[data-secao-reclamacoes]", {
+      codigoCasa: codigoUrl,
+      inquilinoAtual: casa.inquilinoAtualId
+        ? { id: casa.inquilinoAtualId, nomeCompleto: casa.inquilinoNome }
+        : null,
     }),
   ]);
 });

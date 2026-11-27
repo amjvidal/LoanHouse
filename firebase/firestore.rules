@@ -33,6 +33,10 @@ service cloud.firestore {
       return s in ['pendente', 'pago', 'atrasado'];
     }
 
+    function statusReclamacaoValido(s) {
+      return s in ['aberta', 'resolvida'];
+    }
+
     match /usuarios/{uid} {
       allow read: if logado() && request.auth.uid == uid;
       allow write: if false;
@@ -46,7 +50,11 @@ service cloud.firestore {
         && situacaoValida(request.resource.data.situacao);
 
       match /reclamacoes/{id} {
-        allow read, write: if autorizado();
+        allow read, delete: if autorizado();
+        allow create, update: if autorizado()
+          && textoNaoVazio(request.resource.data.descricao)
+          && textoNaoVazio(request.resource.data.data)
+          && statusReclamacaoValido(request.resource.data.status);
       }
       match /contas/{id} {
         allow read, write: if autorizado();

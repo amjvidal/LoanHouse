@@ -1726,6 +1726,77 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* Reclamações e chamados (#45) */
+.secao-cabecalho__titulo-com-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.pilha-reclamacoes {
+  display: grid;
+  gap: 12px;
+}
+
+.cartao-reclamacao {
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: grid;
+  gap: 10px;
+  background: #ffffff;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.cartao-reclamacao--aberta {
+  border-left: 4px solid #dc2626;
+  background: #fffdfd;
+}
+
+.cartao-reclamacao--resolvida {
+  border-left: 4px solid #16a34a;
+  background: #ffffff;
+  opacity: 0.9;
+}
+
+.cartao-reclamacao__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cartao-reclamacao__badges {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cartao-reclamacao__data {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.cartao-reclamacao__acoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cartao-reclamacao__descricao {
+  font-size: 15px;
+  color: var(--cor-texto);
+  line-height: 1.45;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
   .grade-casas-continua,
