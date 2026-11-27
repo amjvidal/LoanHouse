@@ -87,8 +87,13 @@ import {
   validarArquivoEnvio,
   ehArquivoImagem,
   formatarTamanhoBytes,
+  inferirContentTypeArquivo,
+  montarCaminhoStorage,
+  sanitizarNomeArquivo,
+  supabaseConfigurado,
   LIMITE_BYTES,
 } from "../js/utils/validacao-arquivo.js";
+import { supabaseConfig } from "../js/config/supabase-config.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -1242,4 +1247,27 @@ test("vencimentos no calendário: mensalidades salvas, projeção de meses futur
   }).filter((v) => v.referencia === "2027-04");
 
   assert.deepEqual(vencAbr27.map((v) => v.casaId), ["SAO-123"]);
+});
+
+test("Supabase Storage: configuração, sanitização de nomes, caminhos seguros e MIME type (#39)", () => {
+  assert.equal(supabaseConfigurado(supabaseConfig), true);
+  assert.equal(supabaseConfig.bucket, "arquivos");
+  assert.equal(
+    supabaseConfigurado({ url: "https://PREENCHER.supabase.co", anonKey: "PREENCHER", bucket: "arquivos" }),
+    false
+  );
+
+  assert.equal(sanitizarNomeArquivo("Contrato João & Maria (2026).pdf"), "Contrato_Joao_Maria_2026_.pdf");
+  assert.equal(sanitizarNomeArquivo("   "), "arquivo");
+
+  assert.equal(
+    montarCaminhoStorage("/casas/SAO-123/fotos/", "Fachada Principal.JPG", 1700000000000),
+    "casas/SAO-123/fotos/1700000000000-Fachada_Principal.JPG"
+  );
+  assert.throws(() => montarCaminhoStorage("", "foto.jpg"), /Pasta de destino inválida/);
+  assert.throws(() => montarCaminhoStorage("casas/../segredo", "foto.jpg"), /Pasta de destino inválida/);
+
+  assert.equal(inferirContentTypeArquivo({ name: "foto.JPG", type: "" }), "image/jpeg");
+  assert.equal(inferirContentTypeArquivo({ name: "planta.PNG", type: "" }), "image/png");
+  assert.equal(inferirContentTypeArquivo({ name: "contrato.PDF", type: "" }), "application/pdf");
 });
