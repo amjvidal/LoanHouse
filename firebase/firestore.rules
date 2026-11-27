@@ -99,7 +99,12 @@ service cloud.firestore {
     }
 
     match /estoque/{id} {
-      allow read, write: if autorizado();
+      allow read, delete: if autorizado();
+      allow create, update: if autorizado()
+        && textoNaoVazio(request.resource.data.nome)
+        && textoNaoVazio(request.resource.data.unidade)
+        && request.resource.data.quantidade is number
+        && request.resource.data.quantidade >= 0;
     }
   }
 }

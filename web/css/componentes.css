@@ -1638,6 +1638,94 @@ input:focus, select:focus, textarea:focus {
   margin: 0;
 }
 
+/* Estoque de materiais (#93) */
+.estoque-resumo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.estoque-resumo__total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.estoque-busca {
+  max-width: 420px;
+  margin-bottom: 16px;
+}
+
+.lista-estoque {
+  display: grid;
+  gap: 10px;
+}
+
+.item-estoque {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.item-estoque--falta {
+  border-left: 4px solid var(--cor-atrasada);
+  background: #fffdfd;
+}
+
+.item-estoque__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.item-estoque__nome {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cor-texto);
+  overflow-wrap: anywhere;
+}
+
+.item-estoque__quantidade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-estoque__valor {
+  min-width: 96px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.item-estoque__valor strong {
+  font-size: 20px;
+}
+
+.item-estoque__unidade {
+  font-size: 13px;
+  color: var(--cor-texto-suave);
+}
+
+@media (max-width: 640px) {
+  .item-estoque {
+    grid-template-columns: 1fr auto;
+  }
+
+  .item-estoque__info {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 960px) {
   .colunas-situacao,
   .grade-casas-continua,
