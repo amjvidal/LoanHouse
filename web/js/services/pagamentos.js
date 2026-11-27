@@ -77,6 +77,11 @@ export async function buscarPagamento(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+export async function listarTodosPagamentos() {
+  const snap = await getDocs(pagamentos);
+  return ordenarMensalidades(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+}
+
 export async function listarPagamentosPorContrato(contratoId) {
   const idLimpo = String(contratoId ?? "").trim();
   if (!idLimpo) return [];

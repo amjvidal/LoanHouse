@@ -1419,6 +1419,11 @@ input:focus, select:focus, textarea:focus {
   color: #047857;
   border-color: #a7f3d0;
 }
+.item-calendario--pago {
+  background: #f0f9f2;
+  color: #2e6b3e;
+  border-color: #c8e6cf;
+}
 
 /* Modal de Compromisso / Evento (#86) */
 .modal-evento__caixa {

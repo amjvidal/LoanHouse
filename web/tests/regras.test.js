@@ -71,6 +71,7 @@ import {
   formatarDataIso,
   formatarMesAno,
   gerarGradeMes,
+  listarVencimentosCalendario,
   navegarMes,
   NOMES_MESES,
   DIAS_SEMANA_SIGLAS,
@@ -1153,4 +1154,92 @@ test("reclamações da casa: validação, normalização, ordenação e regra do
   assert.match(regras, /match \/reclamacoes\/\{id\}/);
   assert.match(regras, /statusReclamacaoValido\(request\.resource\.data\.status\)/);
   assert.match(regras, /textoNaoVazio\(request\.resource\.data\.descricao\)/);
+});
+
+test("vencimentos no calendário: mensalidades salvas, projeção de meses futuros e classificação (#85)", () => {
+  const hoje = "2026-11-18";
+
+  const contratos = [
+    {
+      id: "ctr-10",
+      casaId: "sao-123",
+      inquilinoId: "inq-1",
+      inquilinoNome: "João Carlos",
+      valorAluguel: 1400,
+      diaVencimento: 10,
+      dataInicio: "2026-10-01",
+      dataFim: null,
+      status: "ativo",
+    },
+    {
+      id: "ctr-31",
+      casaId: "boa-205",
+      inquilinoId: "inq-2",
+      inquilinoNome: "Maria Aparecida",
+      valorAluguel: 1800,
+      diaVencimento: 31,
+      dataInicio: "2026-11-01",
+      dataFim: "2027-03-31",
+      status: "ativo",
+    },
+  ];
+
+  // Mensalidade já gravada no Firestore como paga (prevalece sobre a projeção)
+  const pagamentosSalvos = [
+    {
+      id: "ctr-10_2026-11",
+      contratoId: "ctr-10",
+      casaId: "SAO-123",
+      inquilinoId: "inq-1",
+      inquilinoNome: "João Carlos",
+      referencia: "2026-11",
+      vencimento: "2026-11-10",
+      valor: 1400,
+      status: "pago",
+      dataPagamento: "2026-11-09",
+    },
+  ];
+
+  // 1. Novembro/2026: ctr-10 aparece como "pago" no dia 10/11 e ctr-31 é projetado no dia 30/11 como "pendente"
+  const gradeNov = gerarGradeMes(2026, 11, hoje);
+  const vencNov = listarVencimentosCalendario(gradeNov, {
+    contratos,
+    pagamentos: pagamentosSalvos,
+    hoje,
+  }).filter((v) => v.referencia === "2026-11");
+
+  assert.equal(vencNov.length, 2);
+  assert.equal(vencNov[0].id, "ctr-10_2026-11");
+  assert.equal(vencNov[0].vencimento, "2026-11-10");
+  assert.equal(vencNov[0].statusEfetivo, STATUS_PAGAMENTO.PAGO);
+
+  assert.equal(vencNov[1].id, "ctr-31_2026-11");
+  assert.equal(vencNov[1].vencimento, "2026-11-30");
+  assert.equal(vencNov[1].statusEfetivo, STATUS_PAGAMENTO.PENDENTE);
+
+  // 2. Fevereiro/2027 (mês futuro de 28 dias): projeta ambos os contratos ativos sem duplicar
+  const gradeFev27 = gerarGradeMes(2027, 2, hoje);
+  const vencFev27 = listarVencimentosCalendario(gradeFev27, {
+    contratos,
+    pagamentos: pagamentosSalvos,
+    hoje,
+  }).filter((v) => v.referencia === "2027-02");
+
+  assert.deepEqual(
+    vencFev27.map((v) => ({ casaId: v.casaId, vencimento: v.vencimento, status: v.statusEfetivo })),
+    [
+      { casaId: "SAO-123", vencimento: "2027-02-10", status: "pendente" },
+      { casaId: "BOA-205", vencimento: "2027-02-28", status: "pendente" },
+    ]
+  );
+
+  // 3. Abril/2027: ctr-31 já encerrou em 2027-03-31, então só ctr-10 é projetado
+  const gradeAbr27 = gerarGradeMes(2027, 4, hoje);
+  const vencAbr27 = listarVencimentosCalendario(gradeAbr27, {
+    contratos,
+    pagamentos: pagamentosSalvos,
+    hoje,
+  }).filter((v) => v.referencia === "2027-04");
+
+  assert.deepEqual(vencAbr27.map((v) => v.casaId), ["SAO-123"]);
 });
