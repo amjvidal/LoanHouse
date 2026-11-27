@@ -104,6 +104,13 @@ import {
   validarConta,
   validarIptu,
 } from "../js/utils/validacao-conta.js";
+import {
+  SERVICOS_PARCEIRO,
+  filtrarParceiros,
+  normalizarDadosParceiro,
+  ordenarParceiros,
+  validarParceiro,
+} from "../js/utils/validacao-parceiro.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -1359,4 +1366,50 @@ test("controle de IPTU e lançamento de contas de água (Compesa) e luz (Celpe) 
     totalPendentes: 2,
     valorPendente: 245.5,
   });
+});
+
+test("cadastro de parceiros: validação, normalização, ordenação e busca (#90)", () => {
+  assert.equal(SERVICOS_PARCEIRO.includes("Eletricista"), true);
+
+  // 1. Normalização e formatação automática do telefone
+  const parceiro = normalizarDadosParceiro({
+    nome: "  Mestre   Severino ",
+    servico: "  Eletricista ",
+    telefone: "81988776655",
+    observacoes: "  Atende sábados e urgências. ",
+  });
+
+  assert.deepEqual(parceiro, {
+    nome: "Mestre Severino",
+    servico: "Eletricista",
+    telefone: "(81) 98877-6655",
+    observacoes: "Atende sábados e urgências.",
+  });
+
+  // 2. Validação de campos obrigatórios
+  assert.throws(
+    () => validarParceiro({ nome: "A", servico: "Pintor", telefone: "81988776655" }),
+    (e) => e.campo === "nome"
+  );
+  assert.throws(
+    () => validarParceiro({ nome: "Severino", servico: " ", telefone: "81988776655" }),
+    (e) => e.campo === "servico"
+  );
+  assert.throws(
+    () => validarParceiro({ nome: "Severino", servico: "Pintor", telefone: "12345" }),
+    (e) => e.campo === "telefone"
+  );
+
+  // 3. Ordenação por serviço e nome, e filtro sem acento ou por telefone
+  const lista = [
+    { id: "p1", nome: "Zeca", servico: "Pintor", telefone: "(81) 99999-1111", observacoes: "" },
+    { id: "p2", nome: "Antônio", servico: "Eletricista", telefone: "(81) 98888-2222", observacoes: "Hidráulica também" },
+    { id: "p3", nome: "Bruno", servico: "Eletricista", telefone: "(81) 97777-3333", observacoes: "" },
+  ];
+
+  assert.deepEqual(ordenarParceiros(lista).map((p) => p.id), ["p2", "p3", "p1"]);
+  assert.deepEqual(filtrarParceiros(lista, "ANTONIO").map((p) => p.id), ["p2"]);
+  assert.deepEqual(filtrarParceiros(lista, "hidraulica").map((p) => p.id), ["p2"]);
+  assert.deepEqual(filtrarParceiros(lista, "977773333").map((p) => p.id), ["p3"]);
+  assert.equal(filtrarParceiros(lista, "").length, 3);
 });
