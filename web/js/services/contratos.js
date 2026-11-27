@@ -56,6 +56,13 @@ export async function buscarContrato(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+export async function listarContratosAtivos() {
+  const snap = await getDocs(
+    query(contratos, where("status", "==", STATUS_CONTRATO.ATIVO))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
 export async function listarContratosPorCasa(casaId) {
   const codigoLimpo = String(casaId ?? "").trim().toUpperCase();
   if (!codigoLimpo) return [];

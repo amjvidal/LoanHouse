@@ -1,14 +1,19 @@
-// Página: calendário mensal e gerenciamento de eventos (#84, #86)
+// Página: calendário mensal, exibição de vencimentos e gerenciamento de eventos (#84, #85, #86)
 import { exigirLogin } from "../services/auth.js";
 import { montarMenu } from "../components/menu.js";
-import { preencherCabecalhoUsuario } from "../components/cartao-casa.js";
+import { formatarMoeda, preencherCabecalhoUsuario } from "../components/cartao-casa.js";
 import {
   formatarDataIso,
   formatarMesAno,
   gerarGradeMes,
+  listarVencimentosCalendario,
   navegarMes,
 } from "../utils/calendario.js";
+import { hojeISO } from "../utils/situacao.js";
+import { STATUS_PAGAMENTO } from "../utils/validacao-pagamento.js";
 import { listarCasas } from "../services/casas.js";
+import { listarContratosAtivos } from "../services/contratos.js";
+import { listarTodosPagamentos } from "../services/pagamentos.js";
 import {
   atualizarEvento,
   criarEvento,
@@ -42,6 +47,9 @@ let mesExibido = agora.getMonth() + 1;
 
 let listaCasas = [];
 let listaEventos = [];
+let listaContratosAtivos = [];
+let listaPagamentos = [];
+let vencimentosGradeAtual = [];
 let eventoEmEdicaoId = null;
 
 function escaparHtml(texto) {
@@ -108,12 +116,46 @@ function fecharModalEvento() {
   if (elFeedback) elFeedback.hidden = true;
 }
 
+function renderizarVencimentoItem(v) {
+  const status = v.statusEfetivo;
+  const classeStatus =
+    status === STATUS_PAGAMENTO.ATRASADO
+      ? "item-calendario--atraso"
+      : status === STATUS_PAGAMENTO.PAGO
+        ? "item-calendario--pago"
+        : "item-calendario--vencimento";
+  const prefixo =
+    status === STATUS_PAGAMENTO.PAGO
+      ? `<span class="item-calendario__hora" aria-hidden="true">✓</span>`
+      : "";
+  const rotuloStatus =
+    status === STATUS_PAGAMENTO.ATRASADO
+      ? "Em atraso"
+      : status === STATUS_PAGAMENTO.PAGO
+        ? "Pago"
+        : "Vencimento";
+  const inquilinoTexto = v.inquilinoNome ? ` (${v.inquilinoNome})` : "";
+  const valorTexto = formatarMoeda(v.valor ?? 0);
+  const tooltip = `${rotuloStatus}: Aluguel ${v.casaId}${inquilinoTexto} • ${valorTexto}`;
+  const hrefCasa = v.casaId ? `casa.html?id=${encodeURIComponent(v.casaId)}` : "casas.html";
+
+  return `
+    <a class="item-calendario ${classeStatus}" href="${hrefCasa}" data-vencimento-id="${escaparHtml(v.id)}" title="${escaparHtml(tooltip)}">
+      ${prefixo}
+      <span class="item-calendario__titulo">Aluguel ${escaparHtml(v.casaId)}</span>
+    </a>
+  `;
+}
+
 function renderizarDia(dia) {
   const classes = ["dia-calendario"];
   if (!dia.noMesAtual) classes.push("dia-calendario--fora");
   if (dia.ehHoje) classes.push("dia-calendario--hoje");
 
+  const vencimentosDoDia = vencimentosGradeAtual.filter((v) => v.vencimento === dia.dataIso);
   const eventosDoDia = listaEventos.filter((e) => e.data === dia.dataIso);
+
+  const htmlVencimentos = vencimentosDoDia.map(renderizarVencimentoItem).join("");
 
   const htmlEventos = eventosDoDia.map((e) => {
     const horaTexto = e.hora ? `<span class="item-calendario__hora">${escaparHtml(e.hora)}</span>` : "";
@@ -134,7 +176,7 @@ function renderizarDia(dia) {
         <button type="button" class="dia-calendario__btn-add" data-adicionar-data="${dia.dataIso}" aria-label="Adicionar compromisso no dia ${dia.dia}" title="Agendar compromisso">+</button>
       </div>
       <div class="dia-calendario__eventos" data-eventos-dia="${dia.dataIso}">
-        ${htmlEventos}
+        ${htmlVencimentos}${htmlEventos}
       </div>
     </div>
   `;
@@ -148,7 +190,13 @@ export function renderizarCalendario(ano, mes) {
     elSubtitulo.textContent = `Agenda e vencimentos • ${formatarMesAno(ano, mes)}`;
   }
   if (elGrade) {
-    const dias = gerarGradeMes(ano, mes);
+    const hoje = hojeISO();
+    const dias = gerarGradeMes(ano, mes, hoje);
+    vencimentosGradeAtual = listarVencimentosCalendario(dias, {
+      contratos: listaContratosAtivos,
+      pagamentos: listaPagamentos,
+      hoje,
+    });
     elGrade.innerHTML = dias.map(renderizarDia).join("");
   }
 }
@@ -280,13 +328,17 @@ preencherCabecalhoUsuario();
 exigirLogin(async (usuario) => {
   preencherCabecalhoUsuario(usuario);
 
-  const [casas, eventos] = await Promise.all([
+  const [casas, eventos, contratosAtivos, pagamentos] = await Promise.all([
     listarCasas().catch(() => []),
     listarEventos().catch(() => []),
+    listarContratosAtivos().catch(() => []),
+    listarTodosPagamentos().catch(() => []),
   ]);
 
   listaCasas = casas;
   listaEventos = eventos;
+  listaContratosAtivos = contratosAtivos;
+  listaPagamentos = pagamentos;
 
   popularSelectCasas();
   renderizarCalendario(anoExibido, mesExibido);

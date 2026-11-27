@@ -1,4 +1,11 @@
-// Utilitários de lógica e cálculo do calendário mensal (#84)
+// Utilitários de lógica e cálculo do calendário mensal e vencimentos (#84, #85)
+import { hojeISO } from "./situacao.js";
+import {
+  classificarStatusMensalidade,
+  idMensalidade,
+  montarDadosMensalidade,
+  referenciaValida,
+} from "./validacao-pagamento.js";
 
 export const NOMES_MESES = [
   "Janeiro",
@@ -113,4 +120,73 @@ export function gerarGradeMes(ano, mes, hojeIso = null) {
   }
 
   return dias;
+}
+
+export function listarVencimentosCalendario(
+  diasGrade = [],
+  { contratos = [], pagamentos = [], hoje = hojeISO() } = {}
+) {
+  const datasVisiveis = new Set(
+    diasGrade.map((d) => String(d?.dataIso ?? "").trim()).filter(Boolean)
+  );
+  const referenciasVisiveis = new Set(
+    diasGrade
+      .map((d) => String(d?.dataIso ?? "").trim().slice(0, 7))
+      .filter(referenciaValida)
+  );
+
+  const porId = new Map();
+
+  for (const pag of pagamentos) {
+    if (!pag || !pag.vencimento) continue;
+    const id =
+      String(pag.id ?? "").trim() ||
+      (pag.contratoId && pag.referencia && referenciaValida(pag.referencia)
+        ? idMensalidade(pag.contratoId, pag.referencia)
+        : "");
+    if (!id) continue;
+    porId.set(id, { ...pag, id });
+  }
+
+  for (const contrato of contratos) {
+    if (!contrato || contrato.status !== "ativo") continue;
+    if (!contrato.id || !contrato.casaId || !contrato.inquilinoId) continue;
+
+    const refInicio = String(contrato.dataInicio ?? "").trim().slice(0, 7);
+    const refFim = contrato.dataFim ? String(contrato.dataFim).trim().slice(0, 7) : null;
+
+    for (const ref of referenciasVisiveis) {
+      if (referenciaValida(refInicio) && ref < refInicio) continue;
+      if (refFim && referenciaValida(refFim) && ref > refFim) continue;
+
+      const idEsperado = idMensalidade(contrato.id, ref);
+      if (porId.has(idEsperado)) continue;
+
+      try {
+        const projetada = montarDadosMensalidade(contrato, ref, hoje);
+        porId.set(idEsperado, { ...projetada, projetada: true });
+      } catch {
+        // Ignora contrato com dado incompleto sem interromper o calendário.
+      }
+    }
+  }
+
+  const resultado = [];
+  for (const item of porId.values()) {
+    const vencimento = String(item.vencimento ?? "").trim();
+    if (!vencimento) continue;
+    if (datasVisiveis.size > 0 && !datasVisiveis.has(vencimento)) continue;
+
+    resultado.push({
+      ...item,
+      casaId: String(item.casaId ?? "").trim().toUpperCase(),
+      statusEfetivo: classificarStatusMensalidade(item, hoje),
+    });
+  }
+
+  return resultado.sort((a, b) => {
+    const cmpData = a.vencimento.localeCompare(b.vencimento);
+    if (cmpData !== 0) return cmpData;
+    return a.casaId.localeCompare(b.casaId, "pt-BR");
+  });
 }
