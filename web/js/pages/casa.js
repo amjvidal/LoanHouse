@@ -14,6 +14,7 @@ import { montarSecaoHistoricoCasa } from "../components/secao-historico-casa.js"
 import { montarSecaoPagamentosCasa } from "../components/secao-pagamentos-casa.js";
 import { montarSecaoArquivos } from "../components/secao-arquivos.js";
 import { montarSecaoReclamacoesCasa } from "../components/secao-reclamacoes-casa.js";
+import { montarSecaoContasCasa } from "../components/secao-contas-casa.js";
 
 const params = new URLSearchParams(location.search);
 const codigoUrl = params.get("id");
@@ -386,6 +387,7 @@ exigirLogin(async (usuario) => {
     await Promise.all([
       montarSecaoContrato("[data-secao-contrato]"),
       montarSecaoPagamentosCasa("[data-secao-pagamentos]"),
+      montarSecaoContasCasa("[data-secao-contas]"),
       montarSecaoHistoricoCasa("[data-secao-historico]"),
       montarSecaoArquivos("[data-secao-arquivos]"),
       montarSecaoReclamacoesCasa("[data-secao-reclamacoes]"),
@@ -436,6 +438,9 @@ exigirLogin(async (usuario) => {
       form.valorAluguel.value = atualizada.valorAluguel;
     }
     estadoContas.aluguelPago = !(atualizada.situacao === "atrasada" || atualizada.aluguelAtrasado === true);
+    estadoContas.iptuPago = atualizada.iptuPago !== false;
+    estadoContas.aguaPendente = atualizada.aguaPendente === true;
+    estadoContas.luzPendente = atualizada.luzPendente === true;
     sincronizarBotoesToggle();
     atualizarCabecalhoCasa();
   }
@@ -457,6 +462,11 @@ exigirLogin(async (usuario) => {
     }),
     montarSecaoPagamentosCasa("[data-secao-pagamentos]", {
       codigoCasa: codigoUrl,
+      aoAtualizar: sincronizarEstadoCasaDoBanco,
+    }),
+    montarSecaoContasCasa("[data-secao-contas]", {
+      codigoCasa: codigoUrl,
+      casa,
       aoAtualizar: sincronizarEstadoCasaDoBanco,
     }),
     montarSecaoHistoricoCasa("[data-secao-historico]", codigoUrl),

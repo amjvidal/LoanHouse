@@ -94,6 +94,16 @@ import {
   LIMITE_BYTES,
 } from "../js/utils/validacao-arquivo.js";
 import { supabaseConfig } from "../js/config/supabase-config.js";
+import {
+  ROTULOS_TIPO_CONTA,
+  TIPOS_CONTA,
+  normalizarDadosConta,
+  normalizarDadosIptu,
+  ordenarContas,
+  resumirPendenciasContas,
+  validarConta,
+  validarIptu,
+} from "../js/utils/validacao-conta.js";
 
 test("gera o código da casa", () => {
   assert.equal(gerarCodigoCasa("Boa Viagem", "123"), "BOA-123");
@@ -1270,4 +1280,83 @@ test("Supabase Storage: configuração, sanitização de nomes, caminhos seguros
   assert.equal(inferirContentTypeArquivo({ name: "foto.JPG", type: "" }), "image/jpeg");
   assert.equal(inferirContentTypeArquivo({ name: "planta.PNG", type: "" }), "image/png");
   assert.equal(inferirContentTypeArquivo({ name: "contrato.PDF", type: "" }), "application/pdf");
+});
+
+test("controle de IPTU e lançamento de contas de água (Compesa) e luz (Celpe) (#43)", () => {
+  assert.equal(ROTULOS_TIPO_CONTA.agua, "Água (Compesa)");
+  assert.equal(ROTULOS_TIPO_CONTA.luz, "Luz (Celpe)");
+
+  // 1. Normalização e validação de contas de água e luz
+  const contaAgua = normalizarDadosConta({
+    tipo: "Compesa",
+    referencia: "2026-11",
+    valor: "89,90",
+    pago: false,
+  });
+  assert.deepEqual(contaAgua, {
+    tipo: TIPOS_CONTA.AGUA,
+    referencia: "2026-11",
+    valor: 89.9,
+    vencimento: "2026-11-15",
+    pago: false,
+  });
+
+  const contaLuz = normalizarDadosConta({
+    tipo: "LUZ",
+    referencia: "2026-10",
+    valor: 210.45,
+    vencimento: "2026-10-20",
+    pago: "sim",
+  });
+  assert.deepEqual(contaLuz, {
+    tipo: TIPOS_CONTA.LUZ,
+    referencia: "2026-10",
+    valor: 210.45,
+    vencimento: "2026-10-20",
+    pago: true,
+  });
+
+  assert.throws(
+    () => validarConta({ tipo: "gas", referencia: "2026-11", valor: 50 }),
+    (e) => e.campo === "tipo"
+  );
+  assert.throws(
+    () => validarConta({ tipo: "agua", referencia: "11/2026", valor: 50 }),
+    (e) => e.campo === "referencia"
+  );
+  assert.throws(
+    () => validarConta({ tipo: "agua", referencia: "2026-11", valor: 0 }),
+    (e) => e.campo === "valor"
+  );
+  assert.throws(
+    () => validarConta({ tipo: "agua", referencia: "2026-11", valor: 50, vencimento: "2026-02-30" }),
+    (e) => e.campo === "vencimento"
+  );
+
+  // 2. Normalização e validação de IPTU
+  assert.deepEqual(normalizarDadosIptu({ iptuAno: "2026", iptuPago: "pendente" }), {
+    iptuAno: 2026,
+    iptuPago: false,
+  });
+  assert.deepEqual(normalizarDadosIptu({ iptuPago: true }, 2026), {
+    iptuAno: 2026,
+    iptuPago: true,
+  });
+  assert.throws(() => validarIptu({ iptuAno: 1990 }), (e) => e.campo === "iptuAno");
+
+  // 3. Ordenação (pendentes primeiro, depois referência mais recente) e resumo de pendências
+  const lista = [
+    { id: "c1", tipo: "agua", referencia: "2026-11", valor: 80, pago: true },
+    { id: "c2", tipo: "luz", referencia: "2026-10", valor: 150, pago: false },
+    { id: "c3", tipo: "agua", referencia: "2026-11", valor: 95.5, pago: false },
+  ];
+  const ordenadas = ordenarContas(lista);
+  assert.deepEqual(ordenadas.map((c) => c.id), ["c3", "c2", "c1"]);
+
+  assert.deepEqual(resumirPendenciasContas(lista), {
+    aguaPendente: true,
+    luzPendente: true,
+    totalPendentes: 2,
+    valorPendente: 245.5,
+  });
 });
