@@ -2,6 +2,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
+  UNIDADES_ESTOQUE,
+  calcularNovaQuantidade,
+  converterQuantidade,
+  filtrarEstoque,
+  formatarQuantidade,
+  normalizarDadosItemEstoque,
+  ordenarEstoque,
+  resumirEstoque,
+  validarItemEstoque,
+} from "../js/utils/validacao-estoque.js";
+import {
   STATUS_RECLAMACAO,
   normalizarDadosReclamacao,
   ordenarReclamacoes,
@@ -1047,6 +1058,57 @@ test("fotos e documentos: validação de formatos, limite de 10 MB e formataçã
   assert.equal(formatarTamanhoBytes(500), "500 B");
   assert.equal(formatarTamanhoBytes(2048), "2.0 KB");
   assert.equal(formatarTamanhoBytes(5 * 1024 * 1024), "5.0 MB");
+});
+
+test("estoque de materiais: cadastro, aumentar/diminuir quantidade, busca e regra do Firestore (#93)", () => {
+  // 1. Nome, quantidade e unidade obrigatórios
+  assert.throws(() => validarItemEstoque({ nome: "", quantidade: 1, unidade: "saco" }), /nome/);
+  assert.throws(() => validarItemEstoque({ nome: "C", quantidade: 1, unidade: "saco" }), /2 caracteres/);
+  assert.throws(() => validarItemEstoque({ nome: "Cimento", quantidade: "", unidade: "saco" }), /quantidade válida/);
+  assert.throws(() => validarItemEstoque({ nome: "Cimento", quantidade: "dez", unidade: "saco" }), /quantidade válida/);
+  assert.throws(() => validarItemEstoque({ nome: "Cimento", quantidade: -1, unidade: "saco" }), /negativa/);
+  assert.throws(() => validarItemEstoque({ nome: "Cimento", quantidade: 1, unidade: " " }), /unidade/);
+  assert.equal(validarItemEstoque({ nome: "Cimento", quantidade: 0, unidade: "saco" }), true);
+  assert.equal(UNIDADES_ESTOQUE.includes("saco"), true);
+
+  // 2. Quantidade no formato brasileiro
+  assert.equal(converterQuantidade("2,5"), 2.5);
+  assert.equal(converterQuantidade("1.200,75"), 1200.75);
+  assert.equal(converterQuantidade("10"), 10);
+  assert.equal(Number.isNaN(converterQuantidade("abc")), true);
+  assert.equal(formatarQuantidade(2.5), "2,5");
+  assert.equal(formatarQuantidade(1200), "1.200");
+
+  // 3. Normalização
+  assert.deepEqual(
+    normalizarDadosItemEstoque({ nome: "  Tinta   Acrílica ", quantidade: "3,5", unidade: " Galão " }),
+    { nome: "Tinta Acrílica", nomeBusca: "tinta acrilica", quantidade: 3.5, unidade: "galão" }
+  );
+
+  // 4. Aumentar e diminuir sem deixar negativo
+  assert.equal(calcularNovaQuantidade(5, 1), 6);
+  assert.equal(calcularNovaQuantidade(5, -1), 4);
+  assert.equal(calcularNovaQuantidade(0.3, -0.1), 0.2);
+  assert.equal(calcularNovaQuantidade(undefined, 1), 1);
+  assert.equal(calcularNovaQuantidade(1, -1), 0);
+  assert.throws(() => calcularNovaQuantidade(0, -1), /quantidade suficiente/);
+
+  // 5. Ordenação, busca sem acento e resumo
+  const itens = [
+    { id: "1", nome: "Torneira", quantidade: 2 },
+    { id: "2", nome: "Argamassa", quantidade: 0 },
+    { id: "3", nome: "Tinta acrílica", quantidade: 4 },
+  ];
+  assert.deepEqual(ordenarEstoque(itens).map((i) => i.id), ["2", "3", "1"]);
+  assert.deepEqual(filtrarEstoque(itens, "ACRILICA").map((i) => i.id), ["3"]);
+  assert.equal(filtrarEstoque(itens, "").length, 3);
+  assert.deepEqual(resumirEstoque(itens), { total: 3, emFalta: 1, disponiveis: 2 });
+
+  // 6. Regra do Firestore valida nome, unidade e quantidade não negativa
+  const regras = readFileSync(new URL("../../firebase/firestore.rules", import.meta.url), "utf8");
+  assert.match(regras, /match \/estoque\/\{id\}/);
+  assert.match(regras, /request\.resource\.data\.quantidade >= 0/);
+  assert.match(regras, /textoNaoVazio\(request\.resource\.data\.unidade\)/);
 });
 
 test("reclamações da casa: validação, normalização, ordenação e regra do Firestore (#45)", () => {

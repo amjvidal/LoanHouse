@@ -12,8 +12,93 @@
 <body>
   <header class="topo"><nav class="menu" data-menu></nav></header>
   <main class="conteudo">
-    <h1>Estoque</h1>
-    <div data-conteudo></div>
+    <header class="painel-topo">
+      <div>
+        <h1 class="painel-topo__titulo">Estoque</h1>
+        <p class="painel-topo__subtitulo">Materiais guardados para manutenção das casas</p>
+      </div>
+      <div class="usuario-chip">
+        <span class="usuario-chip__avatar" data-usuario-iniciais></span>
+        <span class="usuario-chip__nome" data-usuario-nome></span>
+      </div>
+    </header>
+
+    <section class="cartao-secao">
+      <div class="secao-cabecalho">
+        <div class="estoque-resumo" data-resumo-estoque></div>
+        <button id="btn-novo-material" class="botao botao--primario botao--compacto" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Novo material</span>
+        </button>
+      </div>
+
+      <div class="campo estoque-busca">
+        <label for="busca-estoque">Buscar material</label>
+        <input type="search" id="busca-estoque" placeholder="Ex.: cimento, tinta, torneira" autocomplete="off">
+      </div>
+
+      <p class="mensagem-erro" role="alert" data-erro-estoque hidden></p>
+
+      <div class="lista-estoque" data-lista-estoque>
+        <p class="vazio">Carregando estoque...</p>
+      </div>
+    </section>
+
+    <div id="modal-material" class="modal-confirmacao" hidden>
+      <div class="modal-confirmacao__caixa modal-evento__caixa" role="dialog" aria-modal="true" aria-labelledby="modal-material-titulo">
+        <div class="modal-confirmacao__topo">
+          <span class="modal-confirmacao__icone modal-confirmacao__icone--sucesso" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </span>
+          <div class="modal-confirmacao__conteudo">
+            <h3 id="modal-material-titulo" class="modal-confirmacao__titulo" data-modal-material-titulo>Novo material</h3>
+            <p class="modal-confirmacao__texto">Informe o nome, a quantidade que você tem e a unidade.</p>
+          </div>
+        </div>
+
+        <form id="form-material" class="modal-evento__form" novalidate>
+          <div class="campo">
+            <label for="material-nome">Nome do material *</label>
+            <input type="text" id="material-nome" name="nome" maxlength="80" placeholder="Ex.: Cimento CP II" required>
+          </div>
+
+          <div class="grade-campos grade-campos--2col">
+            <div class="campo">
+              <label for="material-quantidade">Quantidade *</label>
+              <input type="text" id="material-quantidade" name="quantidade" inputmode="decimal" placeholder="Ex.: 10 ou 2,5" required>
+            </div>
+            <div class="campo">
+              <label for="material-unidade">Unidade *</label>
+              <input type="text" id="material-unidade" name="unidade" list="lista-unidades" maxlength="20" placeholder="Ex.: saco" required>
+              <datalist id="lista-unidades"></datalist>
+            </div>
+          </div>
+
+          <p id="material-feedback" class="mensagem-erro" role="alert" hidden></p>
+
+          <div class="modal-evento__acoes">
+            <button type="button" id="btn-excluir-material" class="botao botao--perigo botao--compacto" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>Excluir</span>
+            </button>
+            <div class="modal-evento__acoes-direita">
+              <button type="button" id="btn-cancelar-material" class="botao botao--secundario botao--compacto">Cancelar</button>
+              <button type="submit" id="btn-salvar-material" class="botao botao--primario botao--compacto">Salvar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
   <script type="module" src="js/pages/estoque.js"></script>
 </body>
