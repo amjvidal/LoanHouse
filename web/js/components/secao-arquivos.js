@@ -1,7 +1,7 @@
-// Componente: Seção de fotos e documentos com galeria e lista (#40)
+// Componente: Seção de fotos e documentos com galeria e lista (#39, #40)
 import { doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { db } from "../services/firebase.js";
-import { enviarArquivo, linkTemporario } from "../services/arquivos.js";
+import { enviarArquivo, excluirArquivo, linkTemporario } from "../services/arquivos.js";
 import { abrirModalConfirmacao } from "./modal-confirmacao.js";
 import { validarArquivoEnvio } from "../utils/validacao-arquivo.js";
 
@@ -46,6 +46,7 @@ export async function montarSecaoArquivos(seletor, {
     const ref = doc(db, tipo, idEntidade);
     if (tipo === "casas") {
       await updateDoc(ref, {
+        codigo: idEntidade,
         fotos,
         documentos,
         atualizadoEm: serverTimestamp(),
@@ -214,12 +215,12 @@ export async function montarSecaoArquivos(seletor, {
       try {
         validarArquivoEnvio(file);
         const pasta = `${tipo}/${idEntidade}/${ehFoto ? "fotos" : "documentos"}`;
-        const itemEnviado = await enviarArquivo(pasta, file);
+        const { nome, caminho } = await enviarArquivo(pasta, file);
 
         if (ehFoto) {
-          fotos.push(itemEnviado);
+          fotos.push({ nome, caminho });
         } else {
-          documentos.push(itemEnviado);
+          documentos.push({ nome, caminho });
         }
 
         await atualizarNoBanco();
@@ -248,8 +249,8 @@ export async function montarSecaoArquivos(seletor, {
       });
     }
 
-    // Delegação para exclusão de fotos e documentos
-    container.addEventListener("click", (e) => {
+    const secaoInterna = container.querySelector(".cartao-secao");
+    secaoInterna?.addEventListener("click", (e) => {
       const btnExcluirFoto = e.target.closest("[data-excluir-foto]");
       if (btnExcluirFoto) {
         const idx = Number(btnExcluirFoto.getAttribute("data-excluir-foto"));
@@ -259,10 +260,13 @@ export async function montarSecaoArquivos(seletor, {
         abrirModalConfirmacao({
           titulo: "Excluir foto",
           mensagem: `Deseja remover a foto "${item.nome}"?`,
-          aviso: "Essa foto não ficará mais vinculada ao cadastro.",
+          aviso: "Essa foto será removida do armazenamento e do cadastro.",
           rotuloConfirmar: "Sim, excluir",
           rotuloProcessando: "Excluindo...",
           aoConfirmar: async () => {
+            if (item.caminho) {
+              await excluirArquivo(item.caminho).catch(() => {});
+            }
             fotos.splice(idx, 1);
             await atualizarNoBanco();
             await renderizar();
@@ -280,10 +284,13 @@ export async function montarSecaoArquivos(seletor, {
         abrirModalConfirmacao({
           titulo: "Excluir documento",
           mensagem: `Deseja remover o documento "${item.nome}"?`,
-          aviso: "Esse arquivo não ficará mais vinculado ao cadastro.",
+          aviso: "Esse arquivo será removido do armazenamento e do cadastro.",
           rotuloConfirmar: "Sim, excluir",
           rotuloProcessando: "Excluindo...",
           aoConfirmar: async () => {
+            if (item.caminho) {
+              await excluirArquivo(item.caminho).catch(() => {});
+            }
             documentos.splice(idx, 1);
             await atualizarNoBanco();
             await renderizar();
